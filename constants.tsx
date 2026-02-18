@@ -124,8 +124,9 @@ export const SIDEBAR_LINKS = {
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/user/dashboard' },
     { label: 'Search Consultants', icon: <Search size={20} />, path: '/user/search' },
     { label: 'My Bookings', icon: <Calendar size={20} />, path: '/user/bookings' },
-    { label: 'Credits', icon: <CreditCard size={20} />, path: '/user/credits' },
+     { label: 'Credits', icon: <CreditCard size={20} />, path: '/user/credits' },
     { label: 'Messages', icon: <MessageSquare size={20} />, path: '/user/messages' },
+    { label: 'Profile', icon: <Settings size={20} />, path: '/user/profile' },
   ],
   [UserRole.CONSULTANT]: [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/consultant/dashboard' },
