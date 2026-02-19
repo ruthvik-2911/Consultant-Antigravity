@@ -38,10 +38,10 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const login = async (email: string, role?: UserRole) => {
+  const login = async (email: string, role?: UserRole, name?: string) => {
     setLoading(true);
     try {
-      const userData = await auth.login(email, role);
+      const userData = await auth.login(email, role, name);
       setUser(userData);
       // Persist to local storage for dev convenience
       localStorage.setItem('user', JSON.stringify(userData));
@@ -119,6 +119,14 @@ const App: React.FC = () => {
             <Route
               path="/consultant/reviews"
               element={user ? <EarningsPage /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/consultant/bookings"
+              element={user ? <BookingsPage /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/consultant/messages"
+              element={user ? <MessagesPage /> : <Navigate to="/auth" />}
             />
             <Route
               path="/consultant/profile"

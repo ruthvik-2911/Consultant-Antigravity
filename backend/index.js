@@ -105,7 +105,7 @@ global.is_firebase_enabled = false;
  * 3. If not, create new record with the chosen role [cite: 10]
  */
 app.post("/auth/me", verifyFirebaseToken, async (req, res) => {
-  const { role, phone } = req.body || {};
+  const { role, phone, name } = req.body || {};
 
   try {
     console.log("Auth/me called with req.user:", req.user);
@@ -132,6 +132,11 @@ app.post("/auth/me", verifyFirebaseToken, async (req, res) => {
         dataToUpdate.role = role;
       }
 
+      // Update name if provided (during signup)
+      if (name) {
+        dataToUpdate.name = name;
+      }
+
       user = await prisma.user.update({
         where: { email: req.user.email },
         data: dataToUpdate,
@@ -144,6 +149,7 @@ app.post("/auth/me", verifyFirebaseToken, async (req, res) => {
           email: req.user.email,
           phone: phone || null,
           role: role || "USER",
+          name: name || null, // Include name during signup
         },
       });
     }
@@ -417,7 +423,7 @@ app.get("/consultant/profile", verifyFirebaseToken, async (req, res) => {
  * Update consultant profile
  */
 app.put("/consultant/profile", verifyFirebaseToken, async (req, res) => {
-  const { type, domain, bio, languages, hourly_price } = req.body;
+  const { type, domain, bio, languages, hourly_price, full_name } = req.body;
 
   try {
     const user = await prisma.user.findUnique({
@@ -433,6 +439,7 @@ app.put("/consultant/profile", verifyFirebaseToken, async (req, res) => {
       return res.status(404).json({ error: "Consultant profile not found" });
     }
 
+    // Update both consultant and user records
     const updatedConsultant = await prisma.consultant.update({
       where: { id: user.consultant.id },
       data: {
@@ -446,6 +453,14 @@ app.put("/consultant/profile", verifyFirebaseToken, async (req, res) => {
           : user.consultant.hourly_price,
       },
     });
+
+    // Update user's name if provided
+    if (full_name) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: full_name }
+      });
+    }
 
     console.log(`✓ Consultant profile updated for user ${user.email}`);
     res.status(200).json(updatedConsultant);
@@ -603,28 +618,30 @@ app.get("/consultants", async (req, res) => {
 });
 
 /**
- * GET /consultants/online
- * Get list of online consultants
+ * GET /consultants/:id
+ * Get single consultant details
  */
-app.get("/consultants/online", async (req, res) => {
+app.get("/consultants/:id", async (req, res) => {
   try {
-    const onlineConsultantIds = Array.from(onlineConsultants.keys());
-    
-    const consultants = await prisma.consultant.findMany({
-      where: {
-        id: { in: onlineConsultantIds }
-      },
+    const { id } = req.params;
+
+    const consultant = await prisma.consultant.findUnique({
+      where: { id: parseInt(id) },
       include: {
         user: {
           select: { email: true },
-        }
-      }
+        },
+      },
     });
 
-    res.status(200).json(consultants);
+    if (!consultant) {
+      return res.status(404).json({ error: "Consultant not found" });
+    }
+
+    res.status(200).json(consultant);
   } catch (error) {
-    console.error("Get Online Consultants Error:", error.message);
-    res.status(500).json({ error: "Failed to fetch online consultants" });
+    console.error("Get Consultant Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch consultant" });
   }
 });
 
@@ -1190,50 +1207,19 @@ const io = new Server(server, {
   },
 });
 
-// Track online consultants
-const onlineConsultants = new Map();
-
 io.on("connection", (socket) => {
   console.log("🔌 User connected:", socket.id);
 
-  // Handle consultant going online
-  socket.on("consultant-online", async (consultantId) => {
-    console.log("👨‍⚕️ Consultant online:", consultantId);
-    onlineConsultants.set(consultantId, socket.id);
-    
-    // Broadcast to all clients that consultant is online
-    io.emit("consultant-status", {
-      consultantId,
-      status: "online",
-      timestamp: new Date()
-    });
-  });
-
-  // Handle consultant going offline
-  socket.on("consultant-offline", (consultantId) => {
-    console.log("👨‍⚕️ Consultant offline:", consultantId);
-    onlineConsultants.delete(consultantId);
-    
-    // Broadcast to all clients that consultant is offline
-    io.emit("consultant-status", {
-      consultantId,
-      status: "offline",
-      timestamp: new Date()
-    });
-  });
-
-  // Handle joining booking room for messaging
   socket.on("join-booking", (bookingId) => {
     socket.join(`booking_${bookingId}`);
     console.log("User joined booking room:", bookingId);
   });
 
-  // Handle sending messages
   socket.on("send-message", async (data) => {
     console.log("📩 Message received:", data);
 
     try {
-      const { bookingId, senderId, role, content, type = "text" } = data;
+      const { bookingId, senderId, role, content } = data;
 
       const bookingIdInt = parseInt(bookingId);
 
@@ -1258,71 +1244,25 @@ io.on("connection", (socket) => {
         });
         return;
       }
-      
       const message = await prisma.message.create({
         data: {
           bookingId: bookingIdInt,
           senderId: parseInt(senderId),
           content,
-          type,
         },
       });
 
-      // Broadcast message to all users in the booking room
       io.to(`booking_${bookingId}`).emit("receive-message", {
         ...message,
         role,
-        timestamp: message.createdAt,
       });
     } catch (error) {
       console.error("Message Error:", error.message);
     }
   });
 
-  // Handle typing indicators
-  socket.on("typing", (data) => {
-    const { bookingId, userId, isTyping } = data;
-    socket.to(`booking_${bookingId}`).emit("user-typing", {
-      userId,
-      isTyping
-    });
-  });
-
-  // Handle read receipts
-  socket.on("mark-read", async (data) => {
-    const { messageId, userId } = data;
-    
-    try {
-      await prisma.message.update({
-        where: { id: messageId },
-        data: { read_at: new Date() }
-      });
-      
-      socket.to(`booking_${data.bookingId}`).emit("message-read", {
-        messageId,
-        userId,
-        timestamp: new Date()
-      });
-    } catch (error) {
-      console.error("Mark read error:", error.message);
-    }
-  });
-
   socket.on("disconnect", () => {
-    console.log("🔌 User disconnected:", socket.id);
-    
-    // Find and remove consultant from online list
-    for (const [consultantId, socketId] of onlineConsultants.entries()) {
-      if (socketId === socket.id) {
-        onlineConsultants.delete(consultantId);
-        io.emit("consultant-status", {
-          consultantId,
-          status: "offline",
-          timestamp: new Date()
-        });
-        break;
-      }
-    }
+    console.log("❌ User disconnected:", socket.id);
   });
 });
 server.listen(PORT, () => {

@@ -20,7 +20,8 @@ const ProfilePage: React.FC = () => {
     bio: '',
     languages: '',
     phone: '',
-    location: 'Remote' // Default for now
+    location: 'Remote', // Default for now
+    full_name: '' // Add editable full name field
   });
 
   const handleUserImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +65,8 @@ const ProfilePage: React.FC = () => {
           bio: data.bio || '',
           languages: data.languages || '',
           phone: user?.phone || '',
-          location: 'Remote'
+          location: 'Remote',
+          full_name: profile?.name || user?.name || '' // Set full name from profile or user
         });
       }
     } catch (err) {
@@ -86,7 +88,8 @@ const ProfilePage: React.FC = () => {
           domain: formData.domain,
           hourly_price: formData.hourly_price,
           bio: formData.bio,
-          languages: formData.languages
+          languages: formData.languages,
+          full_name: formData.full_name // Include full name in update
         });
         // Note: Phone update logic needs to be separate if it's on User model
       }
@@ -159,11 +162,18 @@ const ProfilePage: React.FC = () => {
               <div className="md:col-span-2 space-y-6">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Full Name (Read Only)</label>
-                    <input type="text" readOnly defaultValue={profile?.name || user?.email?.split('@')[0]} className="w-full bg-gray-100 border-none rounded-2xl px-5 py-3.5 text-gray-500 font-medium outline-none" />
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Full Name</label>
+                    <input 
+                      type="text" 
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="Enter your full name"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email Address (Read Only)</label>
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email Address</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                       <input type="email" readOnly defaultValue={user?.email} className="w-full bg-gray-100 border-none rounded-2xl pl-12 pr-5 py-3.5 text-gray-500 font-medium outline-none" />

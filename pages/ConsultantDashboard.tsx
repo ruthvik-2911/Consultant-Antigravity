@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { consultants as consultantsApi } from '../services/api';
-import { Consultant, SessionStatus } from '../types';
+import { Consultant, SessionStatus, UserRole } from '../types';
 import { TrendingUp, Users, Calendar, Clock, DollarSign, ArrowUpRight, CheckCircle, Video, Loader, Save, Camera, Upload, User as UserIcon } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { useToast } from '../context/ToastContext';
@@ -19,7 +19,7 @@ const DATA = [
 ];
 
 const ConsultantDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [profile, setProfile] = useState<Consultant | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
@@ -43,7 +43,23 @@ const ConsultantDashboard: React.FC = () => {
   const fetchProfile = async () => {
     try {
       const data = await consultantsApi.getProfile();
+      console.log('📸 Consultant profile data:', data);
       setProfile(data);
+      
+      // Update global auth context with consultant profile data
+      if (data) {
+        const updatedUser = {
+          id: data.userId.toString(),
+          email: data.user?.email || user?.email || '',
+          role: UserRole.CONSULTANT,
+          firebase_uid: user?.firebase_uid || '',
+          avatar: data.profile_pic || data.image || user?.avatar || '',
+          is_verified: data.is_verified
+        };
+        console.log('🔄 Updating auth context with avatar:', updatedUser.avatar);
+        // Update the global auth context
+        await login(updatedUser.email, UserRole.CONSULTANT);
+      }
     } catch (err: any) {
       if (err.response?.status !== 404) {
         console.error("Failed to load profile", err);
@@ -273,7 +289,7 @@ const ConsultantDashboard: React.FC = () => {
         {/* Analytics Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Today\'s Earnings', value: '$0', change: '+0%', icon: <DollarSign className="text-emerald-600" />, color: 'bg-emerald-50' },
+            { label: 'Today\'s Earnings', value: '₹0', change: '+0%', icon: <TrendingUp className="text-emerald-600" />, color: 'bg-emerald-50' },
             { label: 'Total Sessions', value: '0', change: '100% success', icon: <Video className="text-blue-600" />, color: 'bg-blue-50' },
             { label: 'Profile Views', value: '0', change: '+0%', icon: <Users className="text-amber-600" />, color: 'bg-amber-50' },
             {

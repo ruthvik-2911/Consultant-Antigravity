@@ -8,10 +8,10 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  firebase_uid String   @unique // [cite: 8]
-  email        String   @unique // [cite: 8]
-  phone        String?  // Phone number for OTP verification
+  id            String   @id @default(cuid())
+  name          String?  // Full name of the user
+  email         String   @unique
+  firebase_uid  String?  @unique
   role         String   @default("USER") // [cite: 8, 10]
   is_verified  Boolean  @default(false) // Email verification status
   otp_code     String?  // Current OTP code

@@ -17,6 +17,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  console.log('🔍 Layout user object:', user);
+  console.log('🖼️ User avatar:', user?.avatar);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -79,10 +82,20 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
             {/* Clickable Profile Navigation */}
             <Link to="/profile" className="flex items-center space-x-3 pl-4 border-l hover:bg-gray-50 p-1 px-2 rounded-xl transition-colors">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name}</p>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter mt-1">{user?.role.toLowerCase().replace('_', ' ')}</p>
+                <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter mt-1">{user?.role?.toLowerCase()?.replace('_', ' ') || 'USER'}</p>
               </div>
-              <img src={user?.avatar} alt="Avatar" className="w-9 h-9 rounded-full ring-2 ring-blue-50 object-cover shadow-sm" />
+              <img 
+                key={user?.avatar} // Force re-render when avatar changes
+                src={
+                  user?.avatar || // User object with avatar property
+                  user?.profile_pic || // Consultant object with profile_pic property  
+                  user?.image || // Consultant object with image property
+                  'https://picsum.photos/seed/default/200' // Default fallback
+                } 
+                alt="Avatar" 
+                className="w-9 h-9 rounded-full ring-2 ring-blue-50 object-cover shadow-sm" 
+              />
             </Link>
           </div>
         </header>

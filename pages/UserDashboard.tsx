@@ -204,7 +204,7 @@ const UserDashboard: React.FC = () => {
                       <p className="text-xs text-blue-600 font-bold mb-1">{c.domain}</p>
                       <div className="flex items-center text-xs text-gray-500">
                         <Star size={12} className="text-yellow-400 mr-1" fill="currentColor" />
-                        <span>{c.rating} • ${c.hourly_price}/session</span>
+                        <span>{c.rating} • ₹{c.hourly_price}/session</span>
                       </div>
                     </div>
                   </div>
@@ -239,7 +239,7 @@ const UserDashboard: React.FC = () => {
                     <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
                     <div>
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="text-sm font-bold text-gray-900">{act.title}</p>
+                        <span className="text-2xl font-bold text-gray-900">₹{c.hourly_price}</span>
                         <span className="text-[10px] text-gray-400 font-bold uppercase">{act.time}</span>
                       </div>
                       <p className="text-xs text-gray-500 leading-relaxed">{act.desc}</p>

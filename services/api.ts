@@ -50,8 +50,8 @@ api.interceptors.request.use(
 
 export const auth = {
     // Login or Register (Dev Flow)
-    login: async (email: string, role?: string, phone?: string) => {
-        const response = await api.post('/auth/me', { email, role, phone });
+    login: async (email: string, role?: string, phone?: string, name?: string) => {
+        const response = await api.post('/auth/me', { email, role, phone, name });
         return response.data;
     },
 
