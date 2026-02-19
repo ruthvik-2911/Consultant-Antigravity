@@ -392,6 +392,80 @@ app.post("/consultant/register", verifyFirebaseToken, async (req, res) => {
   }
 });
 
+
+
+/**
+ * ================= SUPPORT ROUTES =================
+ */
+
+/**
+ * POST /support
+ * Create new support ticket
+ */
+app.post("/support", verifyFirebaseToken, async (req, res) => {
+  const { subject, category, description } = req.body;
+
+  try {
+    if (!subject || !description) {
+      return res.status(400).json({ error: "Subject and description are required" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { firebase_uid: req.user.firebase_uid }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        userId: user.id,
+        subject,
+        category,
+        description,
+        status: "OPEN"
+      }
+    });
+
+    res.status(201).json(ticket);
+
+  } catch (error) {
+    console.error("Create Support Ticket Error:", error.message);
+    res.status(500).json({ error: "Failed to create support ticket" });
+  }
+});
+
+
+/**
+ * GET /support
+ * Get all tickets for logged-in user
+ */
+app.get("/support", verifyFirebaseToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { firebase_uid: req.user.firebase_uid }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const tickets = await prisma.supportTicket.findMany({
+      where: { userId: user.id },
+      orderBy: { created_at: "desc" }
+    });
+
+    res.status(200).json(tickets);
+
+  } catch (error) {
+    console.error("Get Support Tickets Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch support tickets" });
+  }
+});
+
+
+
 /**
  * GET /consultant/profile
  * Get current user's consultant profile

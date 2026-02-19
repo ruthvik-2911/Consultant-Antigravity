@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Search, Calendar, CreditCard, MessageSquare, ShieldCheck, Users, TrendingUp, Settings, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Search, Calendar, CreditCard, MessageSquare, ShieldCheck, Users, TrendingUp, Settings, Briefcase, HelpCircle } from 'lucide-react';
 import { UserRole, SessionStatus, Session, Consultant } from './types';
 
 export const MOCK_USER = {
@@ -124,9 +124,12 @@ export const SIDEBAR_LINKS = {
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/user/dashboard' },
     { label: 'Search Consultants', icon: <Search size={20} />, path: '/user/search' },
     { label: 'My Bookings', icon: <Calendar size={20} />, path: '/user/bookings' },
-    { label: 'Credits', icon: <CreditCard size={20} />, path: '/user/credits' },
+     { label: 'Credits', icon: <CreditCard size={20} />, path: '/user/credits' },
     { label: 'Messages', icon: <MessageSquare size={20} />, path: '/user/messages' },
-    { label: 'Wallet', icon: <TrendingUp size={20} />, path: '/user/wallet' },
+    { label: 'Profile', icon: <Settings size={20} />, path: '/user/profile' },
+    { label: "Support", icon: <HelpCircle size={20} />, path: "/user/support" },
+
+
   ],
   [UserRole.CONSULTANT]: [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/consultant/dashboard' },
@@ -136,6 +139,7 @@ export const SIDEBAR_LINKS = {
     { label: 'Earnings', icon: <TrendingUp size={20} />, path: '/consultant/earnings' },
     { label: 'Profile', icon: <Briefcase size={20} />, path: '/consultant/profile' },
     { label: 'Reviews', icon: <TrendingUp size={20} />, path: '/consultant/reviews' },
+    { label: 'Support', icon: <HelpCircle size={20} />, path: '/consultant/support' },
   ],
   [UserRole.ENTERPRISE_ADMIN]: [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/consultant/dashboard' }, // Reusing for demo

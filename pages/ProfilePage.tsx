@@ -8,47 +8,89 @@ import { Camera, Mail, Phone, Globe, Lock, Bell, User as UserIcon, Save, Loader 
 import { useToast } from '../context/ToastContext';
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { addToast } = useToast();
   const [profile, setProfile] = useState<Consultant | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
     domain: '',
     hourly_price: '',
     bio: '',
     languages: '',
     phone: '',
-    location: 'Remote', // Default for now
-    full_name: '' // Add editable full name field
+    location: 'Remote' // Default for now
   });
+const handleUserImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
 
-  const handleUserImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      console.log('Selected file:', file);
-      setUploadingImage(true);
-      try {
-        console.log('Starting upload for file:', file.name);
-        const result = await users.uploadProfilePic(file);
-        console.log('Upload result:', result);
-        
-        // Update user in local storage with new avatar
-        const updatedUser = { ...user, avatar: result.avatar };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        addToast("Profile picture updated!", 'success');
-        // Force re-render by updating user state if needed
-        window.location.reload();
-      } catch (err: any) {
-        console.error('Upload error:', err);
-        addToast("Failed to update profile picture", 'error');
-      } finally {
-        setUploadingImage(false);
-      }
+    setUploadingImage(true);
+    try {
+      const result = await users.uploadProfilePic(file);
+
+      if (!user) return;
+
+      const updatedUser = {
+        ...user,
+        avatar: result.avatar
+      };
+
+      // ✅ Update React state
+      setUser(updatedUser);
+
+      // ✅ Update localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      addToast("Profile picture updated!", "success");
+
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      addToast("Failed to update profile picture", "error");
+    } finally {
+      setUploadingImage(false);
     }
-  };
+  }
+};
+
+  
+const handleConsultantImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+
+    setUploadingImage(true);
+    try {
+      const result = await consultantsApi.uploadProfilePic(file);
+
+      if (!user) return;
+
+      const updatedUser = {
+        ...user,
+        avatar: result.profile_pic   // 👈 VERY IMPORTANT
+      };
+
+      // ✅ Update React state
+      setUser(updatedUser);
+
+      // ✅ Update localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      addToast("Profile picture updated!", "success");
+
+      fetchProfile(); // keep this
+
+    } catch (err: any) {
+      console.error('Consultant upload error:', err);
+      addToast("Failed to update profile picture", "error");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+};
+
 
   useEffect(() => {
     fetchProfile();
@@ -60,13 +102,13 @@ const ProfilePage: React.FC = () => {
         const data = await consultantsApi.getProfile();
         setProfile(data);
         setFormData({
+          name: user?.name || user?.email?.split('@')[0] || '',
           domain: data.domain || '',
           hourly_price: data.hourly_price?.toString() || '',
           bio: data.bio || '',
           languages: data.languages || '',
           phone: user?.phone || '',
-          location: 'Remote',
-          full_name: profile?.name || user?.name || '' // Set full name from profile or user
+          location: 'Remote'
         });
       }
     } catch (err) {
@@ -88,12 +130,12 @@ const ProfilePage: React.FC = () => {
           domain: formData.domain,
           hourly_price: formData.hourly_price,
           bio: formData.bio,
-          languages: formData.languages,
-          full_name: formData.full_name // Include full name in update
+          languages: formData.languages
         });
         // Note: Phone update logic needs to be separate if it's on User model
       }
       addToast('Profile updated successfully', 'success');
+       setIsEditing(false);
     } catch (err) {
       addToast('Failed to update profile', 'error');
     } finally {
@@ -113,17 +155,12 @@ const ProfilePage: React.FC = () => {
           <div className="px-8 pb-8">
             <div className="relative -mt-16 mb-8 flex items-end justify-between">
               <div className="relative group">
-                <img 
-                  src={
-                    // Show user avatar for regular users, consultant profile_pic for consultants
-                    (user?.role === 'CONSULTANT' || user?.role === 'ENTERPRISE_ADMIN') 
-                      ? profile?.profile_pic || "https://via.placeholder.com/150"
-                      : user?.avatar || "https://via.placeholder.com/150"
-                  } 
+                  <img 
+                  src={user?.avatar || "https://via.placeholder.com/150"} 
                   className="w-32 h-32 rounded-3xl border-8 border-white object-cover shadow-lg" 
                   alt="Avatar" 
                 />
-                
+
                 {/* Upload overlay - show for all users */}
                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl cursor-pointer">
                   {uploadingImage ? <Loader className="text-white animate-spin" /> : <Camera className="text-white" />}
@@ -132,24 +169,38 @@ const ProfilePage: React.FC = () => {
                     className="hidden" 
                     accept="image/*" 
                     onChange={
-                      (user?.role === 'CONSULTANT' || user?.role === 'ENTERPRISE_ADMIN') 
-                        ? undefined // Use consultant upload handler (already implemented)
-                        : handleUserImageUpload // Use user upload handler
-                    } 
+                      (user?.role === 'CONSULTANT' || user?.role === 'ENTERPRISE_ADMIN')
+                        ? handleConsultantImageUpload
+                        : handleUserImageUpload
+                    }
                     disabled={uploadingImage} 
                   />
                 </label>
               </div>
               <div className="flex space-x-3 mb-2">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center"
-                >
-                  {saving ? <Loader className="animate-spin mr-2" size={18} /> : <Save className="mr-2" size={18} />}
-                  Save Changes
-                </button>
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-gray-800 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-gray-900 transition-all"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center"
+                  >
+                    {saving ? (
+                      <Loader className="animate-spin mr-2" size={18} />
+                    ) : (
+                      <Save className="mr-2" size={18} />
+                    )}
+                    Save Changes
+                  </button>
+                )}
               </div>
+
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -162,21 +213,23 @@ const ProfilePage: React.FC = () => {
               <div className="md:col-span-2 space-y-6">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Full Name</label>
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Full Name (Read Only)</label>
                     <input 
-                      type="text" 
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleChange}
-                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder="Enter your full name"
-                    />
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+
+                    className="w-full bg-gray-50 rounded-2xl px-5 py-3.5"
+                  />
+
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email Address</label>
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email Address (Read Only)</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input type="email" readOnly defaultValue={user?.email} className="w-full bg-gray-100 border-none rounded-2xl pl-12 pr-5 py-3.5 text-gray-500 font-medium outline-none" />
+                      <input type="email" readOnly defaultValue={user?.email} className="w-full bg-gray-100 border-none rounded-2xl pl-12 pr-5 py-3.5 text-gray-500 font-medium outline-none" disabled={!isEditing} />
                     </div>
                   </div>
                 </div>
@@ -192,6 +245,7 @@ const ProfilePage: React.FC = () => {
                           type="number"
                           value={formData.hourly_price}
                           onChange={handleChange}
+                          disabled={!isEditing}
                           className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
@@ -202,6 +256,8 @@ const ProfilePage: React.FC = () => {
                           type="text"
                           value={formData.domain}
                           onChange={handleChange}
+                          disabled={!isEditing}
+
                           className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
@@ -214,6 +270,7 @@ const ProfilePage: React.FC = () => {
                         rows={4}
                         value={formData.bio}
                         onChange={handleChange}
+                        disabled={!isEditing}
                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                         placeholder="Tell clients about your experience..."
                       ></textarea>
@@ -225,6 +282,8 @@ const ProfilePage: React.FC = () => {
                         type="text"
                         value={formData.languages}
                         onChange={handleChange}
+                        disabled={!isEditing}
+
                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
