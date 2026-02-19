@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import api from "../../services/api";
-import { Zap, ShieldCheck, History, Loader } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
+import { Zap, ShieldCheck, History, Loader } from "lucide-react";
 
 interface Transaction {
-  id: string;
+  id: number;
   description: string;
   created_at: string;
   amount: number;
@@ -26,7 +26,7 @@ const UserCredit: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<number | null>(null);
 
-  /* ================= FETCH WALLET ================= */
+  /* ================= LOAD WALLET ================= */
   useEffect(() => {
     fetchWallet();
     fetchTransactions();
@@ -35,33 +35,36 @@ const UserCredit: React.FC = () => {
   const fetchWallet = async () => {
     try {
       const res = await api.get("/wallet");
-      setWalletBalance(res.data.balance);
+      setWalletBalance(res.data.balance || 0);
     } catch (err) {
-      console.error("Failed to fetch wallet");
+      console.error("Wallet fetch failed");
+      addToast("Failed to load wallet", "error");
     }
   };
 
   const fetchTransactions = async () => {
     try {
-      const res = await api.get("/wallet/transactions");
+      const res = await api.get("/transactions");
       setTransactions(res.data || []);
     } catch (err) {
-      console.error("Failed to fetch transactions");
+      console.error("Transaction fetch failed");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ================= BUY CREDITS ================= */
+  /* ================= ADD CREDITS ================= */
   const handleBuyCredits = async (packAmount: number) => {
     setBuying(packAmount);
+
     try {
-      const res = await api.post("/wallet/topup", {
-        credits: packAmount,
+      const res = await api.post("/wallet/add-credits", {
+        amount: packAmount,
       });
 
       setWalletBalance(res.data.new_balance);
       addToast("Credits added successfully!", "success");
+
       fetchTransactions();
     } catch (err) {
       addToast("Failed to add credits", "error");
@@ -82,7 +85,7 @@ const UserCredit: React.FC = () => {
                 Available Balance
               </p>
               <h2 className="text-4xl font-bold">
-                {walletBalance.toFixed(0)} Credits
+                ₹{walletBalance.toFixed(2)}
               </h2>
             </div>
             <Zap className="text-blue-400" size={36} />
@@ -109,6 +112,7 @@ const UserCredit: React.FC = () => {
                 <h4 className="text-3xl font-bold mb-2">
                   {pack.amount}
                 </h4>
+
                 <p className="text-gray-500 text-sm mb-4">
                   + {pack.bonus} Bonus Credits
                 </p>
@@ -160,9 +164,7 @@ const UserCredit: React.FC = () => {
                       {txn.description}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {new Date(
-                        txn.created_at
-                      ).toLocaleDateString()}
+                      {new Date(txn.created_at).toLocaleDateString()}
                     </p>
                   </div>
 

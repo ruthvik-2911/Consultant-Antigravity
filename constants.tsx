@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Search, Calendar, CreditCard, MessageSquare, ShieldCheck, Users, TrendingUp, Settings, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Search, Calendar, CreditCard, MessageSquare, ShieldCheck, Users, TrendingUp, Settings, Briefcase, HelpCircle } from 'lucide-react';
 import { UserRole, SessionStatus, Session, Consultant } from './types';
 
 export const MOCK_USER = {
@@ -127,6 +127,9 @@ export const SIDEBAR_LINKS = {
      { label: 'Credits', icon: <CreditCard size={20} />, path: '/user/credits' },
     { label: 'Messages', icon: <MessageSquare size={20} />, path: '/user/messages' },
     { label: 'Profile', icon: <Settings size={20} />, path: '/user/profile' },
+    { label: "Support", icon: <HelpCircle size={20} />, path: "/user/support" },
+
+
   ],
   [UserRole.CONSULTANT]: [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/consultant/dashboard' },

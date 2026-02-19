@@ -12,12 +12,15 @@ import ConsultantDashboard from './pages/ConsultantDashboard';
 import UserProfilePage from './pages/user/UserProfilePage';
 import SearchPage from './pages/SearchPage';
 import ProfilePage from './pages/ProfilePage';
+import SearchConsultantPage from './pages/user/SearchConsultantPage';
 import UserBooking from './pages/user/UserBooking';
 import BookingsPage from './pages/BookingsPage';
 import CreditsPage from './pages/CreditsPage';
 import MessagesPage from './pages/MessagesPage';
 import AvailabilityPage from './pages/AvailabilityPage';
 import EarningsPage from './pages/EarningsPage';
+import { Wallet } from 'lucide-react';
+import UserSupportPage from './pages/user/UserSupportPage';
 
 interface AuthContextType {
   user: User | null;
@@ -113,7 +116,7 @@ const App: React.FC = () => {
             />
             <Route
               path="/user/search"
-              element={isUser ? <SearchPage /> : <Navigate to="/auth" />}
+              element={isUser ? <SearchConsultantPage /> : <Navigate to="/auth" />}
             />
             <Route
               path="/user/bookings"
@@ -123,6 +126,14 @@ const App: React.FC = () => {
               path="/user/credits"
               element={isUser ? <UserCredit /> : <Navigate to="/auth" />}
             />
+
+            <Route
+              path="/user/wallet"
+              element={isUser ? <UserCredit /> : <Navigate to="/auth" />}
+            />
+
+
+
             <Route
               path="/user/messages"
               element={isUser ? <MessagesPage /> : <Navigate to="/auth" />}
@@ -132,6 +143,12 @@ const App: React.FC = () => {
               path="/user/profile"
               element={isUser ? <UserProfilePage /> : <Navigate to="/auth" />}
             />
+
+            <Route
+              path="/user/support"
+              element={isUser ? <UserSupportPage /> : <Navigate to="/auth" />}
+            />
+
 
             {/* ---------------- CONSULTANT ROUTES ---------------- */}
             <Route
