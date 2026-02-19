@@ -1,25 +1,31 @@
-import React, { useState, createContext, useContext, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { UserRole, User } from './types';
-import { auth } from './services/api';
-import { ToastProvider } from './context/ToastContext';
+import React, { useState, createContext, useContext, useEffect } from "react";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { UserRole, User } from "./types";
+import { auth } from "./services/api";
+import { ToastProvider } from "./context/ToastContext";
 
-// Pages
-import LandingPage from './pages/LandingPage';
-import AuthPage from './pages/AuthPage';
-import UserDashboard from './pages/UserDashboard';
-import ConsultantDashboard from './pages/ConsultantDashboard';
-import EnterpriseDashboard from './pages/EnterpriseDashboard';
-import SearchPage from './pages/SearchPage';
-import ProfilePage from './pages/ProfilePage';
-import BookingsPage from './pages/BookingsPage';
-import CreditsPage from './pages/CreditsPage';
-import WalletPage from './pages/WalletPage';
-import MessagesPage from './pages/MessagesPage';
-import AvailabilityPage from './pages/AvailabilityPage';
-import EarningsPage from './pages/EarningsPage';
-import ReviewsPage from './pages/ReviewsPage';
-import ConsultantSupportPage from './pages/ConsultantSupportPage';
+// ---------------- PAGES ----------------
+import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
+
+// User Pages
+import UserDashboard from "./pages/user/UserDashboard";
+import SearchConsultantPage from "./pages/user/SearchConsultantPage";
+import UserCredit from "./pages/user/UserCredit";
+import UserBooking from "./pages/user/UserBooking";
+import UserProfilePage from "./pages/user/UserProfilePage";
+import UserSupportPage from "./pages/user/UserSupportPage";
+
+// Shared Pages
+import ProfilePage from "./pages/ProfilePage";
+import MessagesPage from "./pages/MessagesPage";
+import BookingsPage from "./pages/BookingsPage";
+
+// Consultant Pages
+import ConsultantDashboard from "./pages/ConsultantDashboard";
+import AvailabilityPage from "./pages/AvailabilityPage";
+import EarningsPage from "./pages/EarningsPage";
+import EnterpriseDashboard from "./pages/EnterpriseDashboard";
 
 interface AuthContextType {
   user: User | null;
@@ -29,18 +35,17 @@ interface AuthContextType {
   loading: boolean;
 }
 
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true); // start true for restore phase
+  const [loading, setLoading] = useState<boolean>(true);
 
   // ---------------- LOGIN ----------------
   const login = async (email: string, role?: UserRole) => {
@@ -48,11 +53,8 @@ const App: React.FC = () => {
     try {
       const userData = await auth.login(email, role);
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
       return userData;
-    } catch (error) {
-      console.error("Login failed", error);
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -61,32 +63,29 @@ const App: React.FC = () => {
   // ---------------- LOGOUT ----------------
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
-  // ---------------- RESTORE USER ON REFRESH ----------------
+  // ---------------- RESTORE SESSION ----------------
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = localStorage.getItem("user");
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    } catch (error) {
-      console.error("Error restoring user:", error);
-      localStorage.removeItem('user');
+    } catch {
+      localStorage.removeItem("user");
     } finally {
-      setLoading(false); // allow routes to render
+      setLoading(false);
     }
   }, []);
 
-  // ---------------- ROLE CHECKS ----------------
   const isUser = user?.role === UserRole.USER;
 
   const isConsultant =
     user?.role === UserRole.CONSULTANT ||
     user?.role === UserRole.ENTERPRISE_ADMIN;
 
-  // ---------------- LOADING SCREEN ----------------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -100,11 +99,11 @@ const App: React.FC = () => {
 
   return (
     <ToastProvider>
-      <AuthContext.Provider value={{ user, setUser,login, logout, loading }}>
+      <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
         <Router>
           <Routes>
 
-            {/* Public Routes */}
+            {/* PUBLIC ROUTES */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Navigate to="/login" />} />
             <Route path="/login" element={<AuthPage type="LOGIN" />} />
@@ -117,23 +116,31 @@ const App: React.FC = () => {
             />
             <Route
               path="/user/search"
-              element={isUser ? <SearchPage /> : <Navigate to="/auth" />}
+              element={isUser ? <SearchConsultantPage /> : <Navigate to="/auth" />}
             />
             <Route
               path="/user/bookings"
-              element={isUser ? <BookingsPage /> : <Navigate to="/auth" />}
+              element={isUser ? <UserBooking /> : <Navigate to="/auth" />}
             />
             <Route
               path="/user/credits"
-              element={isUser ? <CreditsPage /> : <Navigate to="/auth" />}
+              element={isUser ? <UserCredit /> : <Navigate to="/auth" />}
             />
             <Route
               path="/user/wallet"
-              element={isUser ? <WalletPage /> : <Navigate to="/auth" />}
+              element={isUser ? <UserCredit /> : <Navigate to="/auth" />}
             />
             <Route
               path="/user/messages"
               element={isUser ? <MessagesPage /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/user/profile"
+              element={isUser ? <UserProfilePage /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/user/support"
+              element={isUser ? <UserSupportPage /> : <Navigate to="/auth" />}
             />
 
             {/* ---------------- CONSULTANT ROUTES ---------------- */}
@@ -158,30 +165,21 @@ const App: React.FC = () => {
               element={isConsultant ? <EarningsPage /> : <Navigate to="/auth" />}
             />
             <Route
-              path="/consultant/reviews"
-              element={isConsultant ? <ReviewsPage /> : <Navigate to="/auth" />}
-            />
-            <Route
-              path="/consultant/support"
-              element={isConsultant ? <ConsultantSupportPage /> : <Navigate to="/auth" />}
-            />
-            <Route
               path="/consultant/profile"
               element={isConsultant ? <ProfilePage /> : <Navigate to="/auth" />}
             />
-              {/* ---------------- Enterprise ROUTES ---------------- */}
-              <Route
-                path="/consultant/enterprise"
-                element={isConsultant ? <EnterpriseDashboard /> : <Navigate to="/auth" />}
-              />
+            <Route
+              path="/consultant/enterprise"
+              element={isConsultant ? <EnterpriseDashboard /> : <Navigate to="/auth" />}
+            />
 
-            {/* Shared Route */}
+            {/* SHARED PROFILE */}
             <Route
               path="/profile"
               element={user ? <ProfilePage /> : <Navigate to="/auth" />}
             />
 
-            {/* Fallback */}
+            {/* FALLBACK */}
             <Route path="*" element={<Navigate to="/" />} />
 
           </Routes>

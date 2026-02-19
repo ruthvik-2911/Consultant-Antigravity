@@ -39,11 +39,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-                  location.pathname === link.path 
-                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${location.pathname === link.path
+                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm'
                     : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 {link.icon}
                 <span>{link.label}</span>
@@ -52,7 +51,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
           </nav>
 
           <div className="p-4 border-t">
-            <button 
+            <button
               onClick={handleLogout}
               className="flex items-center space-x-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl transition-all"
             >
@@ -75,15 +74,28 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            
+
             {/* Clickable Profile Navigation */}
-            <Link to="/profile" className="flex items-center space-x-3 pl-4 border-l hover:bg-gray-50 p-1 px-2 rounded-xl transition-colors">
+            <Link
+              to="/user/profile"
+              className="flex items-center space-x-3 pl-4 border-l hover:bg-gray-50 p-1 px-2 rounded-xl transition-colors"
+            >
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name}</p>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter mt-1">{user?.role.toLowerCase().replace('_', ' ')}</p>
+                <p className="text-sm font-semibold text-gray-800 leading-none">
+                  {user?.name}
+                </p>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter mt-1">
+                  {user?.role?.toLowerCase().replace('_', ' ')}
+                </p>
               </div>
-              <img src={user?.avatar} alt="Avatar" className="w-9 h-9 rounded-full ring-2 ring-blue-50 object-cover shadow-sm" />
+
+              <img
+                src={user?.avatar}
+                alt="Avatar"
+                className="w-9 h-9 rounded-full ring-2 ring-blue-50 object-cover shadow-sm"
+              />
             </Link>
+
           </div>
         </header>
 
