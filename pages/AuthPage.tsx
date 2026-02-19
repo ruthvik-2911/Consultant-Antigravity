@@ -73,9 +73,24 @@ const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
       const user = await login(email, type === 'SIGNUP' ? selectedRole : undefined);
 
       // Redirect based on ACTUAL role from backend
-      if (user.role === UserRole.USER) navigate('/user/dashboard');
-      else if (user.role === UserRole.CONSULTANT || user.role === UserRole.ENTERPRISE_ADMIN) navigate('/consultant/dashboard');
-      else navigate('/');
+      // Redirect based on ACTUAL role from backend
+if (user.role === UserRole.USER) {
+  navigate('/user/dashboard');
+
+} else if (user.role === UserRole.CONSULTANT) {
+  navigate('/consultant/dashboard');
+
+} else if (
+  user.role === UserRole.ENTERPRISE_ADMIN ||
+  user.role === UserRole.ENTERPRISE_MEMBER
+) {
+  navigate('/enterprise/select-role');
+
+} else {
+  navigate('/');
+}
+
+     
 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid OTP or Login failed.');

@@ -20,6 +20,17 @@ import AvailabilityPage from './pages/AvailabilityPage';
 import EarningsPage from './pages/EarningsPage';
 import { Wallet } from 'lucide-react';
 import UserSupportPage from './pages/user/UserSupportPage';
+import EnterpriseSupport from "./pages/enterprise/EnterpriseSupport";
+import CompanyProfile from './pages/enterprise/CompanyProfile';
+import TeamManagement from './pages/enterprise/TeamManagement';
+import EnterpriseBookings from './pages/enterprise/EnterpriseBookings';
+import EnterpriseEarnings from './pages/enterprise/EnterpriseEarnings';
+import EnterpriseAnalytics from './pages/enterprise/EnterpriseAnalytics';
+import EnterpriseSettings from './pages/enterprise/EnterpriseSettings';
+import EnterpriseMessages from './pages/enterprise/EnterpriseMessage';
+import EnterpriseDashboard from './pages/enterprise/EnterpriseDashboard';
+import EnterpriseMemberDashboard from './pages/enterprise/EnterpriseMemberDashboard';
+import EnterpriseSelectMode from './pages/enterprise/EnterpriseSelectMode';
 
 interface AuthContextType {
   user: User | null;
@@ -133,6 +144,8 @@ const App: React.FC = () => {
 
 
 
+
+
             <Route
               path="/user/messages"
               element={isUser ? <MessagesPage /> : <Navigate to="/auth" />}
@@ -183,6 +196,55 @@ const App: React.FC = () => {
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" />} />
+
+            <Route
+              path="/enterprise/support"
+              element={<EnterpriseSupport />}
+            />
+
+             <Route
+              path="/enterprise/profile"
+              element={<CompanyProfile />}
+            />
+
+            <Route
+            path="/enterprise/team"
+            element={<TeamManagement/>}/>
+      
+           <Route
+            path="/enterprise/bookings"
+            element={<EnterpriseBookings/>}/>
+
+            <Route
+            path="/enterprise/earnings"
+            element={<EnterpriseEarnings/>}/>
+
+             <Route
+            path="/enterprise/analytics"
+            element={<EnterpriseAnalytics/>}/>
+
+            <Route path='/enterprise/settings'
+            element={<EnterpriseSettings/>}/>
+
+            <Route path='/enterprise/messages'
+            element={<EnterpriseMessages/>}/>
+
+            <Route path='/enterprise/dashboard'
+            element={<EnterpriseDashboard/>}/>
+
+            <Route path='/enterprise/member/dashboard'
+            element={<EnterpriseMemberDashboard/>}/>
+
+            <Route
+  path="/enterprise/select-role"
+  element={
+    user?.role === UserRole.ENTERPRISE_ADMIN ||
+    user?.role === UserRole.ENTERPRISE_MEMBER
+      ? <EnterpriseSelectMode />
+      : <Navigate to="/auth" />
+  }
+/>
+
 
           </Routes>
         </Router>

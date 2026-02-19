@@ -1,7 +1,27 @@
 
 import React from 'react';
-import { LayoutDashboard, Search, Calendar, CreditCard, MessageSquare, ShieldCheck, Users, TrendingUp, Settings, Briefcase, HelpCircle } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  TrendingUp,
+  Settings,
+  MessageSquare,
+  Search,
+  Calendar,
+  CreditCard,
+  ShieldCheck,
+  Briefcase,
+  HelpCircle,
+  LogOut,
+  CalendarDays,
+  Wallet,
+  LifeBuoy,
+
+} from 'lucide-react';
+
 import { UserRole, SessionStatus, Session, Consultant } from './types';
+
 
 export const MOCK_USER = {
   id: 'u1',
@@ -141,10 +161,18 @@ export const SIDEBAR_LINKS = {
     { label: 'Reviews', icon: <TrendingUp size={20} />, path: '/consultant/reviews' },
   ],
   [UserRole.ENTERPRISE_ADMIN]: [
-    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/consultant/dashboard' }, // Reusing for demo
-    { label: 'Team', icon: <Users size={20} />, path: '/enterprise/team' },
-    { label: 'Analytics', icon: <TrendingUp size={20} />, path: '/enterprise/analytics' },
-    { label: 'Settings', icon: <Settings size={20} />, path: '/enterprise/settings' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/enterprise/dashboard' },
+{ label: 'Company Profile', icon: <Building2 size={20} />, path: '/enterprise/profile' },
+{ label: 'Team Management', icon: <Users size={20} />, path: '/enterprise/team' },
+{ label: 'Bookings', icon: <CalendarDays size={20} />, path: '/enterprise/bookings' },
+{ label: 'Earnings', icon: <Wallet size={20} />, path: '/enterprise/earnings' },
+{ label: 'Analytics', icon: <TrendingUp size={20} />, path: '/enterprise/analytics' },
+{ label: 'Enterprise Settings', icon: <Settings size={20} />, path: '/enterprise/settings' },
+{ label: 'Messages', icon: <MessageSquare size={20} />, path: '/enterprise/messages' },
+{ label: 'Support', icon: <LifeBuoy size={20} />, path: '/enterprise/support' },
+{ label: 'Logout', icon: <LogOut size={20} />, path: '/logout' },
+
+
   ],
   [UserRole.PLATFORM_ADMIN]: [
     { label: 'Global Stats', icon: <TrendingUp size={20} />, path: '/admin/dashboard' },

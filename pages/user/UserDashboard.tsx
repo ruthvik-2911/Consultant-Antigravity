@@ -28,7 +28,7 @@ const UserDashboard: React.FC = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
-const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
 
   useEffect(() => {
@@ -41,31 +41,31 @@ const [transactions, setTransactions] = useState<any[]>([]);
   }, []);
 
   const fetchNotifications = async () => {
-  try {
-    const res = await api.get("/notifications");
+    try {
+      const res = await api.get("/notifications");
 
-    // Ensure it's always an array
-    const data = Array.isArray(res.data)
-      ? res.data
-      : res.data?.notifications || res.data?.data || [];
+      // Ensure it's always an array
+      const data = Array.isArray(res.data)
+        ? res.data
+        : res.data?.notifications || res.data?.data || [];
 
-    setNotifications(data.slice(0, 3));
+      setNotifications(data.slice(0, 3));
 
-  } catch (err) {
-    console.error("Failed to fetch notifications");
-    setNotifications([]); // fallback
-  }
-};
+    } catch (err) {
+      console.error("Failed to fetch notifications");
+      setNotifications([]); // fallback
+    }
+  };
 
 
-const fetchTransactions = async () => {
-  try {
-    const res = await api.get("/transactions");
-    setTransactions(res.data || []);
-  } catch (err) {
-    console.error("Failed to fetch transactions");
-  }
-};
+  const fetchTransactions = async () => {
+    try {
+      const res = await api.get("/transactions");
+      setTransactions(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch transactions");
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -80,14 +80,14 @@ const fetchTransactions = async () => {
     try {
       const res = await api.get("/wallet");
       setWalletBalance(res.data.balance || 0);
-    } catch {}
+    } catch { }
   };
 
   const fetchConsultants = async () => {
     try {
       const data = await consultantsApi.getAll();
       setConsultants(data?.slice(0, 3) || []);
-    } catch {}
+    } catch { }
   };
 
   const liveSession = sessions.find((s) => s.status === "LIVE");
@@ -146,14 +146,28 @@ const fetchTransactions = async () => {
         )}
 
         {/* ================= WELCOME ================= */}
-        <div className="bg-white p-10 rounded-3xl shadow-sm border">
-          <h1 className="text-4xl font-bold mb-4">
-            Welcome back, {user?.email?.split("@")[0]} 👋
-          </h1>
-          <p className="text-gray-500">
-            You have {upcomingSessions.length} upcoming session(s).
-          </p>
+        {/* ================= WELCOME ================= */}
+        <div className="bg-white p-10 rounded-3xl shadow-sm border flex justify-between items-center">
+
+          <div>
+            <h1 className="text-4xl font-bold mb-4">
+              Welcome back, {user?.email?.split("@")[0]} 👋
+            </h1>
+
+            <p className="text-gray-500">
+              You have {upcomingSessions.length} upcoming session(s).
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate("/user/search")}
+            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-md"
+          >
+            Book Session
+          </button>
+
         </div>
+
 
         {/* ================= PROFILE COMPLETION ================= */}
         <div
@@ -220,142 +234,223 @@ const fetchTransactions = async () => {
           </div>
         </div>
 
-        {/* ================= CREDITS & SUBSCRIPTION ================= */}
-<div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-8 rounded-3xl shadow-lg">
+        {/* ================= RECOMMENDED CONSULTANTS ================= */}
+<div>
+  <h2 className="text-2xl font-bold mb-6">
+    Recommended Consultants
+  </h2>
 
-  <div className="flex justify-between items-start">
-
-    <div>
-      <p className="text-sm opacity-80 mb-2">
-        Current Credit Balance
-      </p>
-
-      <h2 className="text-4xl font-bold mb-4">
-        ₹{walletBalance.toFixed(2)}
-      </h2>
-
-      <p className="text-sm opacity-80">
-        Active Plan: <span className="font-semibold">Basic</span>
-      </p>
-
-      <p className="text-sm opacity-80">
-        Plan Expiry: 31 Dec 2025
-      </p>
+  {consultants?.length === 0 ? (
+    <div className="bg-white p-8 rounded-3xl shadow-sm border text-gray-500">
+      No recommendations available.
     </div>
+  ) : (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    <Wallet size={36} className="text-white/70" />
+      {consultants.map((c) => (
+        <div
+          key={c.id}
+          className="bg-white p-6 rounded-3xl shadow-sm border hover:shadow-md transition"
+        >
+          {/* Profile Image */}
+          <div className="flex justify-center mb-4">
+            <img
+              src={c.profile_pic || "https://via.placeholder.com/100"}
+              alt={c.name}
+              className="h-20 w-20 rounded-full object-cover"
+            />
+          </div>
 
-  </div>
+          {/* Name */}
+          <h3 className="text-lg font-bold text-center">
+            {c.name}
+          </h3>
 
-  <div className="flex flex-wrap gap-4 mt-6">
+          {/* Domain */}
+          <p className="text-blue-600 text-sm text-center mt-1">
+            {c.domain}
+          </p>
 
-    <button
-      onClick={() => navigate("/user/wallet")}
-      className="bg-white text-blue-900 px-6 py-2 rounded-xl font-semibold hover:scale-105 transition"
-    >
-      Buy Credits
-    </button>
+          {/* Rating */}
+          <div className="flex justify-center items-center mt-3 text-yellow-500 text-sm">
+            ⭐ {c.rating || 5}
+          </div>
 
-    <button
-      onClick={() => navigate("/user/subscription")}
-      className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
-    >
-      Upgrade Plan
-    </button>
+          {/* Price */}
+          <p className="text-center font-semibold mt-3">
+            ₹{c.hourly_price} / session
+          </p>
 
-    <button
-      onClick={() => navigate("/user/transactions")}
-      className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
-    >
-      View Transactions
-    </button>
+          {/* View Profile Button */}
+          <div className="flex justify-center mt-5">
+            <button
+              onClick={() => navigate(`/user/consultant/${c.id}`)}
+              className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
+            >
+              View Profile
+            </button>
+          </div>
 
-  </div>
+        </div>
+      ))}
 
+    </div>
+  )}
 </div>
 
-{/* ================= RECENT ACTIVITY ================= */}
-<div className="bg-white p-8 rounded-3xl shadow-sm border">
-  <div className="flex items-center mb-6">
-    <Activity className="mr-2 text-gray-500" size={20} />
-    <h2 className="text-2xl font-bold">Recent Activity</h2>
-  </div>
 
-  <ul className="space-y-4 text-sm text-gray-600">
+        {/* ================= CREDITS & SUBSCRIPTION ================= */}
+        <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-8 rounded-3xl shadow-lg">
+
+          <div className="flex justify-between items-start">
+
+            <div>
+              <p className="text-sm opacity-80 mb-2">
+                Current Credit Balance
+              </p>
+
+              <h2 className="text-4xl font-bold mb-4">
+                ₹{walletBalance.toFixed(2)}
+              </h2>
+
+              <p className="text-sm opacity-80">
+                Active Plan: <span className="font-semibold">Basic</span>
+              </p>
+
+              <p className="text-sm opacity-80">
+                Plan Expiry: 31 Dec 2025
+              </p>
+            </div>
+
+            <Wallet size={36} className="text-white/70" />
+
+          </div>
+
+          <div className="flex flex-wrap gap-4 mt-6">
+
+            <button
+              onClick={() => navigate("/user/wallet")}
+              className="bg-white text-blue-900 px-6 py-2 rounded-xl font-semibold hover:scale-105 transition"
+            >
+              Buy Credits
+            </button>
+
+            <button
+              onClick={() => navigate("/user/wallet")}
+              className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
+            >
+              Upgrade Plan
+            </button>
+
+            <button
+              onClick={() => navigate("/user/wallet")}
+              className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
+            >
+              View Transactions
+            </button>
+
+          </div>
+
+        </div>
+
+      {/* ================= RECENT ACTIVITY ================= */}
+<div className="bg-white p-8 rounded-3xl shadow-sm border">
+
+  <h2 className="text-2xl font-bold mb-6">
+    Recent Activity
+  </h2>
+
+  <div className="space-y-4">
 
     {/* Last Booking */}
-    {sessions.length > 0 && (
-      <li className="flex justify-between">
-        <span>Last Booking</span>
-        <span className="font-semibold">
-          {sessions[0]?.consultant?.domain || "Session"}
-        </span>
-      </li>
-    )}
+    <div className="flex justify-between items-center border-b pb-3">
+      <span className="text-gray-500">Last Booking</span>
+      <span className="font-semibold text-gray-900">
+        {sessions?.length > 0
+          ? sessions[0]?.consultant?.domain || "Session"
+          : "No bookings"}
+      </span>
+    </div>
 
     {/* Last Payment */}
-    {transactions.length > 0 && (
-      <li className="flex justify-between">
-        <span>Last Payment</span>
-        <span className="font-semibold">
-          ₹{transactions[0]?.amount}
-        </span>
-      </li>
-    )}
+    <div className="flex justify-between items-center border-b pb-3">
+      <span className="text-gray-500">Last Payment</span>
+      <span className="font-semibold text-gray-900">
+        {transactions?.length > 0
+          ? `₹${transactions[0]?.amount}`
+          : "No payments"}
+      </span>
+    </div>
 
     {/* Last Review */}
-    {sessions.some((s) => s.review) && (
-      <li className="flex justify-between">
-        <span>Last Review</span>
-        <span className="font-semibold">
-          {sessions.find((s) => s.review)?.review?.rating || 5}★
-        </span>
-      </li>
-    )}
+    <div className="flex justify-between items-center border-b pb-3">
+      <span className="text-gray-500">Last Review</span>
+      <span className="font-semibold text-gray-900">
+        {sessions?.some(s => s.review)
+          ? `${sessions.find(s => s.review)?.review?.rating}★`
+          : "No reviews"}
+      </span>
+    </div>
 
     {/* Recent Chat */}
-    {sessions.some((s) => s.chat_started) && (
-      <li className="flex justify-between">
-        <span>Recent Chat</span>
-        <span className="font-semibold">
-          {sessions.find((s) => s.chat_started)?.consultant?.domain}
-        </span>
-      </li>
-    )}
+    <div className="flex justify-between items-center">
+      <span className="text-gray-500">Recent Chat</span>
+      <span className="font-semibold text-gray-900">
+        {sessions?.some(s => s.chat_started)
+          ? sessions.find(s => s.chat_started)?.consultant?.domain
+          : "No chats"}
+      </span>
+    </div>
 
-    {/* Fallback if nothing */}
-    {sessions.length === 0 && transactions.length === 0 && (
-      <li className="text-gray-500">
-        No recent activity available.
-      </li>
-    )}
+  </div>
 
-  </ul>
 </div>
 
 
 
-        
-       <div className="space-y-4">
+{/* ================= NOTIFICATIONS PREVIEW ================= */}
+<div className="bg-white p-8 rounded-3xl shadow-sm border">
 
-  {!Array.isArray(notifications) || notifications.length === 0 ? (
-    <p className="text-gray-500">No notifications</p>
-  ) : (
-    notifications.map((n, index) => (
-      <div key={index} className="border p-4 rounded-xl">
-        <p className="font-semibold">{n.title}</p>
-        <p className="text-sm text-gray-500">
-          {n.message}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          {n.created_at
-            ? new Date(n.created_at).toLocaleDateString()
-            : ""}
-        </p>
-      </div>
-    ))
-  )}
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-2xl font-bold">Notifications</h2>
 
+    <button
+      onClick={() => navigate("/user/message")}
+      className="text-blue-600 font-semibold hover:underline"
+    >
+      View All
+    </button>
+  </div>
+
+  <div className="space-y-4">
+
+    {Array.isArray(notifications) && notifications.length > 0 ? (
+      notifications.slice(0, 3).map((n, index) => (
+        <div
+          key={index}
+          className="p-4 border rounded-xl hover:bg-gray-50 transition"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="font-semibold">{n.title}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {n.message}
+              </p>
+            </div>
+
+            <span className="text-xs text-gray-400">
+              {n.created_at
+                ? new Date(n.created_at).toLocaleDateString()
+                : ""}
+            </span>
+          </div>
+        </div>
+      ))
+    ) : (
+      <p className="text-gray-500">No notifications available</p>
+    )}
+
+  </div>
 </div>
 
 
