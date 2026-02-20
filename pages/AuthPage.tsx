@@ -74,23 +74,26 @@ const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
 
       // Redirect based on ACTUAL role from backend
       // Redirect based on ACTUAL role from backend
-if (user.role === UserRole.USER) {
-  navigate('/user/dashboard');
+      if (user.role === UserRole.USER) {
+        navigate('/user/dashboard');
 
-} else if (user.role === UserRole.CONSULTANT) {
-  navigate('/consultant/dashboard');
+      } else if (user.role === UserRole.CONSULTANT) {
+        navigate('/consultant/dashboard');
 
-} else if (
-  user.role === UserRole.ENTERPRISE_ADMIN ||
-  user.role === UserRole.ENTERPRISE_MEMBER
-) {
-  navigate('/enterprise/select-role');
+      } else if (user.role === UserRole.ENTERPRISE_ADMIN) {
+        navigate('/enterprise/select-role');
 
-} else {
-  navigate('/');
-}
+      } else if (user.role === UserRole.ENTERPRISE_MEMBER) {
+        navigate('/member/dashboard');
 
-     
+      } else if (user.role === UserRole.PLATFORM_ADMIN) {
+        navigate('/admin/dashboard');  // ✅ new
+
+      } else {
+        navigate('/');
+      }
+
+
 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid OTP or Login failed.');
@@ -155,6 +158,12 @@ if (user.role === UserRole.USER) {
                 title="Enterprise Partner"
                 subtitle="Managing teams and large-scale operations"
                 onClick={() => handleRoleSelect(UserRole.ENTERPRISE_ADMIN)}
+              />
+
+              <RoleButton
+                title="Enterprise Team Member"
+                subtitle="I am part of an enterprise organization"
+                onClick={() => handleRoleSelect(UserRole.ENTERPRISE_MEMBER)}
               />
 
               <div className="pt-4 text-center">

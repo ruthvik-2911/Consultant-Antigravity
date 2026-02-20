@@ -13,6 +13,10 @@ interface TeamMember {
   id: number;
   name: string;
   email: string;
+  domain?: string;
+  bio?: string;
+  pricing?: number;
+  languages?: string;
   status: string;
   earnings?: number;
   total_sessions?: number;
@@ -27,6 +31,13 @@ const TeamManagement: React.FC = () => {
   const [newMember, setNewMember] = useState({
     name: "",
     email: "",
+    domain: "",
+    bio: "",
+    pricing: "",
+    languages: "",
+    profile_photo: null as File | null,
+    kyc_docs: [] as File[],
+    certificates: [] as File[],
   });
 
   /* ================= FETCH TEAM ================= */
@@ -35,7 +46,6 @@ const TeamManagement: React.FC = () => {
     try {
       const res = await api.get("/enterprise/team");
 
-      // 🔥 FIX: Ensure always array
       const data = Array.isArray(res.data)
         ? res.data
         : res.data?.team || [];
@@ -57,10 +67,46 @@ const TeamManagement: React.FC = () => {
 
   const handleAddMember = async () => {
     try {
-      await api.post("/enterprise/team", newMember);
+      const formData = new FormData();
 
-      setNewMember({ name: "", email: "" });
+      formData.append("name", newMember.name);
+      formData.append("email", newMember.email);
+      formData.append("domain", newMember.domain);
+      formData.append("bio", newMember.bio);
+      formData.append("pricing", newMember.pricing);
+      formData.append("languages", newMember.languages);
+
+      if (newMember.profile_photo) {
+        formData.append("profile_photo", newMember.profile_photo);
+      }
+
+      newMember.kyc_docs.forEach((file) =>
+        formData.append("kyc_docs", file)
+      );
+
+      newMember.certificates.forEach((file) =>
+        formData.append("certificates", file)
+      );
+
+      await api.post("/enterprise/team", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       setShowAddModal(false);
+      setNewMember({
+        name: "",
+        email: "",
+        domain: "",
+        bio: "",
+        pricing: "",
+        languages: "",
+        profile_photo: null,
+        kyc_docs: [],
+        certificates: [],
+      });
+
       fetchTeam();
     } catch (err) {
       console.error("Failed to add member");
@@ -105,7 +151,7 @@ const TeamManagement: React.FC = () => {
             onClick={() => setShowAddModal(true)}
             className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2"
           >
-            <Plus size={18} /> Add Member
+            <Plus size={18} /> Add Consultant
           </button>
         </div>
 
@@ -129,7 +175,7 @@ const TeamManagement: React.FC = () => {
                     {member.email}
                   </p>
 
-                  <div className="flex gap-6 mt-3 text-xs text-gray-600">
+                  <div className="flex gap-6 mt-3 text-xs text-gray-600 flex-wrap">
                     <span>
                       Status:
                       <span
@@ -143,21 +189,13 @@ const TeamManagement: React.FC = () => {
                       </span>
                     </span>
 
-                    <span>
-                      Earnings: ₹{member.earnings || 0}
-                    </span>
-
-                    <span>
-                      Sessions: {member.total_sessions || 0}
-                    </span>
-
-                    <span>
-                      Success Rate: {member.success_rate || 0}%
-                    </span>
+                    <span>Domain: {member.domain || "—"}</span>
+                    <span>Pricing: ₹{member.pricing || 0}</span>
+                    <span>Sessions: {member.total_sessions || 0}</span>
+                    <span>Success: {member.success_rate || 0}%</span>
                   </div>
                 </div>
 
-                {/* ACTION BUTTONS */}
                 <div className="flex gap-3">
                   <button className="px-4 py-2 bg-green-100 text-green-700 rounded-xl flex items-center gap-2">
                     <CalendarPlus size={16} /> Assign
@@ -175,43 +213,129 @@ const TeamManagement: React.FC = () => {
           )}
         </div>
 
-        {/* ADD MEMBER MODAL */}
+        {/* ADD CONSULTANT MODAL */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-xl">
-              <h2 className="text-xl font-bold mb-6">
-                Add Enterprise Member
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+
+              <h2 className="text-xl font-bold">
+                Add Enterprise Consultant
               </h2>
 
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="w-full border rounded-xl px-4 py-3"
-                  value={newMember.name}
-                  onChange={(e) =>
-                    setNewMember({
-                      ...newMember,
-                      name: e.target.value,
-                    })
-                  }
-                />
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="w-full border rounded-xl px-4 py-3"
+                value={newMember.name}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, name: e.target.value })
+                }
+              />
 
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full border rounded-xl px-4 py-3"
+                value={newMember.email}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, email: e.target.value })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Domain / Expertise"
+                className="w-full border rounded-xl px-4 py-3"
+                value={newMember.domain}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, domain: e.target.value })
+                }
+              />
+
+              <textarea
+                placeholder="Bio & Experience"
+                className="w-full border rounded-xl px-4 py-3 h-28"
+                value={newMember.bio}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, bio: e.target.value })
+                }
+              />
+
+              <input
+                type="number"
+                placeholder="Hourly / Session Pricing (₹)"
+                className="w-full border rounded-xl px-4 py-3"
+                value={newMember.pricing}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, pricing: e.target.value })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Languages (English, Hindi...)"
+                className="w-full border rounded-xl px-4 py-3"
+                value={newMember.languages}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, languages: e.target.value })
+                }
+              />
+
+              <div>
+                <label className="text-sm font-semibold">
+                  Profile Photo
+                </label>
                 <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full border rounded-xl px-4 py-3"
-                  value={newMember.email}
+                  type="file"
+                  className="w-full mt-2"
                   onChange={(e) =>
                     setNewMember({
                       ...newMember,
-                      email: e.target.value,
+                      profile_photo: e.target.files?.[0] || null,
                     })
                   }
                 />
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div>
+                <label className="text-sm font-semibold">
+                  Personal KYC Documents
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  className="w-full mt-2"
+                  onChange={(e) =>
+                    setNewMember({
+                      ...newMember,
+                      kyc_docs: e.target.files
+                        ? Array.from(e.target.files)
+                        : [],
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold">
+                  Certificates
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  className="w-full mt-2"
+                  onChange={(e) =>
+                    setNewMember({
+                      ...newMember,
+                      certificates: e.target.files
+                        ? Array.from(e.target.files)
+                        : [],
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 rounded-xl bg-gray-100"
@@ -223,12 +347,14 @@ const TeamManagement: React.FC = () => {
                   onClick={handleAddMember}
                   className="px-5 py-2 rounded-xl bg-blue-600 text-white"
                 >
-                  Add Member
+                  Add Consultant
                 </button>
               </div>
+
             </div>
           </div>
         )}
+
       </div>
     </Layout>
   );

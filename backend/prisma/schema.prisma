@@ -24,6 +24,7 @@ model User {
   wallet       Wallet?
   transactions Transaction[]
   supportTickets SupportTicket[]
+  enterprise Enterprise?
 
 }
 
@@ -140,21 +141,40 @@ model Slot {
 }
 
 
-model SupportTicket {
-  id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int
 
-  subject     String
-  category    String
-  description String
+model Enterprise {
+  id              Int      @id @default(autoincrement())
+  name            String
+  registration_no String?
+  gst_number      String?
+  logo            String?
+  website         String?
+  description     String?
 
-  status      String   @default("OPEN") // OPEN, IN_PROGRESS, CLOSED
-  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  ownerId         Int      @unique
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at      DateTime @default(now())
+  supportTickets SupportTicket[]
 }
 
+model SupportTicket {
+  id            Int      @id @default(autoincrement())
 
+  userId        Int?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  enterpriseId  Int?
+  enterprise    Enterprise? @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  subject       String
+  category      String
+  description   String
+
+  status        String   @default("OPEN")
+  priority      String   @default("MEDIUM")
+
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
 

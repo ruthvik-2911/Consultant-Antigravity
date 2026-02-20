@@ -17,6 +17,10 @@ import {
   CalendarDays,
   Wallet,
   LifeBuoy,
+  Star,
+  User,
+  Video,
+  DollarSign,
 
 } from 'lucide-react';
 
@@ -171,9 +175,18 @@ export const SIDEBAR_LINKS = {
 { label: 'Messages', icon: <MessageSquare size={20} />, path: '/enterprise/messages' },
 { label: 'Support', icon: <LifeBuoy size={20} />, path: '/enterprise/support' },
 { label: 'Logout', icon: <LogOut size={20} />, path: '/logout' },
-
-
   ],
+
+  [UserRole.ENTERPRISE_MEMBER]: [
+    { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/member/dashboard" },
+    { label: "My Profile", icon: <User size={18} />, path: "/member/profile" },
+    { label: "My Availability", icon: <CalendarDays size={18} />, path: "/member/availability" },
+    { label: "My Bookings", icon: <Video size={18} />, path: "/member/bookings" },
+    { label: "My Earnings", icon: <DollarSign size={18} />, path: "/member/earnings" },
+    { label: "Reviews", icon: <Star size={18} />, path: "/member/reviews" },
+    { label: "Messages", icon: <MessageSquare size={18} />, path: "/member/messages" },
+  ],
+
   [UserRole.PLATFORM_ADMIN]: [
     { label: 'Global Stats', icon: <TrendingUp size={20} />, path: '/admin/dashboard' },
     { label: 'Verifications', icon: <ShieldCheck size={20} />, path: '/admin/verify' },

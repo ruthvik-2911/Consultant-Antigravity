@@ -412,14 +412,33 @@ app.post("/support", verifyFirebaseToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const ticket = await prisma.supportTicket.create({
-      data: {
-        userId: user.id,
-        subject,
-        category,
-        description,
-        status: "OPEN"
+    let ticketData = {
+      subject,
+      category,
+      description,
+      status: "OPEN"
+    };
+
+    // 🏢 If Enterprise Owner → attach enterpriseId
+    if (user.role === "ENTERPRISE_OWNER") {
+
+      const enterprise = await prisma.enterprise.findUnique({
+        where: { ownerId: user.id }
+      });
+
+      if (!enterprise) {
+        return res.status(404).json({ error: "Enterprise not found" });
       }
+
+      ticketData.enterpriseId = enterprise.id;
+
+    } else {
+      // 👤 Normal user ticket
+      ticketData.userId = user.id;
+    }
+
+    const ticket = await prisma.supportTicket.create({
+      data: ticketData
     });
 
     res.status(201).json(ticket);
@@ -430,11 +449,6 @@ app.post("/support", verifyFirebaseToken, async (req, res) => {
   }
 });
 
-
-/**
- * GET /support
- * Get all tickets for logged-in user
- */
 app.get("/support", verifyFirebaseToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -445,8 +459,26 @@ app.get("/support", verifyFirebaseToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    let whereCondition = {};
+
+    if (user.role === "ENTERPRISE_OWNER") {
+
+      const enterprise = await prisma.enterprise.findUnique({
+        where: { ownerId: user.id }
+      });
+
+      if (!enterprise) {
+        return res.status(404).json({ error: "Enterprise not found" });
+      }
+
+      whereCondition.enterpriseId = enterprise.id;
+
+    } else {
+      whereCondition.userId = user.id;
+    }
+
     const tickets = await prisma.supportTicket.findMany({
-      where: { userId: user.id },
+      where: whereCondition,
       orderBy: { created_at: "desc" }
     });
 
@@ -528,6 +560,7 @@ app.put("/consultant/profile", verifyFirebaseToken, async (req, res) => {
     res.status(500).json({ error: "Failed to update consultant profile" });
   }
 });
+
 
 /**
  * POST /consultant/upload-profile-pic

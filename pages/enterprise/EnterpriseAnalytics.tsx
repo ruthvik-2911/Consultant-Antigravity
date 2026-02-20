@@ -1,27 +1,48 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Layout";
-import { MOCK_SESSIONS } from "../../constants";
+import { bookings as bookingsApi } from "../../services/api";
+import { Booking } from "../../types";
 import {
   BarChart3,
   Users,
   DollarSign,
   CheckCircle,
-  TrendingUp,
+  Loader,
 } from "lucide-react";
 
 const EnterpriseAnalytics: React.FC = () => {
-  /* ================= DYNAMIC DATA ================= */
+  const [sessions, setSessions] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalSessions = MOCK_SESSIONS.length;
+  /* ================= FETCH BOOKINGS ================= */
 
-  const completedSessions = MOCK_SESSIONS.filter(
-    (s) => s.status === "COMPLETED"
-  );
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      const data = await bookingsApi.getAll(); // or enterprise endpoint
+      setSessions(data || []);
+    } catch (error) {
+      console.error("Failed to fetch analytics data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= BASIC METRICS ================= */
+
+  const totalSessions = sessions.length;
+
+  const completedSessions = useMemo(() => {
+    return sessions.filter((s) => s.status === "COMPLETED");
+  }, [sessions]);
 
   const completionRate =
     totalSessions > 0
       ? ((completedSessions.length / totalSessions) * 100).toFixed(1)
-      : 0;
+      : "0";
 
   const totalRevenue = completedSessions.reduce(
     (sum, s) => sum + (s.price || 0),
@@ -29,7 +50,7 @@ const EnterpriseAnalytics: React.FC = () => {
   );
 
   const activeConsultants = new Set(
-    MOCK_SESSIONS.map((s) => s.assignedTo)
+    sessions.map((s) => s.consultant?.user?.email).filter(Boolean)
   ).size;
 
   /* ================= MONTHLY REVENUE ================= */
@@ -38,8 +59,10 @@ const EnterpriseAnalytics: React.FC = () => {
     const months = Array(12).fill(0);
 
     completedSessions.forEach((session) => {
-      const month = new Date(session.startTime).getMonth();
-      months[month] += session.price || 0;
+      if (session.date) {
+        const month = new Date(session.date).getMonth();
+        months[month] += session.price || 0;
+      }
     });
 
     return months;
@@ -49,12 +72,14 @@ const EnterpriseAnalytics: React.FC = () => {
 
   /* ================= STATUS DISTRIBUTION ================= */
 
-  const statusCounts = {
-    UPCOMING: MOCK_SESSIONS.filter((s) => s.status === "UPCOMING").length,
-    LIVE: MOCK_SESSIONS.filter((s) => s.status === "LIVE").length,
-    COMPLETED: completedSessions.length,
-    CANCELLED: MOCK_SESSIONS.filter((s) => s.status === "CANCELLED").length,
-  };
+  const statusCounts = useMemo(() => {
+    return {
+      CONFIRMED: sessions.filter((s) => s.status === "CONFIRMED").length,
+      LIVE: sessions.filter((s) => s.status === "LIVE").length,
+      COMPLETED: completedSessions.length,
+      CANCELLED: sessions.filter((s) => s.status === "CANCELLED").length,
+    };
+  }, [sessions, completedSessions]);
 
   /* ================= TOP CONSULTANT ================= */
 
@@ -62,14 +87,29 @@ const EnterpriseAnalytics: React.FC = () => {
     const map: Record<string, number> = {};
 
     completedSessions.forEach((s) => {
-      if (!map[s.assignedTo]) map[s.assignedTo] = 0;
-      map[s.assignedTo] += s.price || 0;
+      const name = s.consultant?.user?.email;
+      if (!name) return;
+
+      if (!map[name]) map[name] = 0;
+      map[name] += s.price || 0;
     });
 
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [completedSessions]);
 
   const topConsultant = consultantPerformance[0];
+
+  /* ================= LOADING ================= */
+
+  if (loading) {
+    return (
+      <Layout title="Enterprise Analytics">
+        <div className="flex justify-center items-center h-[60vh]">
+          <Loader className="animate-spin text-blue-600" size={40} />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Enterprise Analytics">
@@ -90,7 +130,7 @@ const EnterpriseAnalytics: React.FC = () => {
             },
             {
               label: "Total Revenue",
-              value: `$${totalRevenue.toLocaleString()}`,
+              value: `₹${totalRevenue.toLocaleString()}`,
               icon: <DollarSign size={22} />,
             },
             {
@@ -126,7 +166,7 @@ const EnterpriseAnalytics: React.FC = () => {
               return (
                 <div key={i} className="flex-1 group relative">
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                    ${amount}
+                    ₹{amount}
                   </div>
                   <div
                     className="bg-blue-200 hover:bg-blue-600 transition-all rounded-t-lg"
@@ -147,8 +187,9 @@ const EnterpriseAnalytics: React.FC = () => {
           </div>
         </div>
 
-        {/* ================= STATUS DISTRIBUTION ================= */}
+        {/* ================= STATUS + TOP CONSULTANT ================= */}
         <div className="grid md:grid-cols-2 gap-6">
+
           <div className="bg-white rounded-3xl p-8 border shadow-sm">
             <h3 className="text-lg font-bold mb-6">
               Session Status Breakdown
@@ -165,7 +206,6 @@ const EnterpriseAnalytics: React.FC = () => {
             ))}
           </div>
 
-          {/* ================= TOP CONSULTANT ================= */}
           <div className="bg-white rounded-3xl p-8 border shadow-sm">
             <h3 className="text-lg font-bold mb-6">
               Top Performing Consultant
@@ -180,7 +220,7 @@ const EnterpriseAnalytics: React.FC = () => {
                   Revenue Generated
                 </p>
                 <p className="text-2xl font-bold">
-                  ${topConsultant[1].toLocaleString()}
+                  ₹{topConsultant[1].toLocaleString()}
                 </p>
               </div>
             ) : (
@@ -189,6 +229,7 @@ const EnterpriseAnalytics: React.FC = () => {
               </p>
             )}
           </div>
+
         </div>
 
       </div>
