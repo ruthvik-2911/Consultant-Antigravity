@@ -257,14 +257,14 @@ const fetchTransactions = async () => {
     </button>
 
     <button
-      onClick={() => navigate("/user/subscription")}
+      onClick={() => navigate("/user/credits")}
       className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
     >
       Upgrade Plan
     </button>
 
     <button
-      onClick={() => navigate("/user/transactions")}
+      onClick={() => navigate("/user/credits")}
       className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
     >
       View Transactions
