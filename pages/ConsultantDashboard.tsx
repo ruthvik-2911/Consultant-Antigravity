@@ -1,24 +1,47 @@
-
-import React, { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
-import { consultants as consultantsApi } from '../services/api';
-import { Consultant, SessionStatus } from '../types';
-import { TrendingUp, Users, Calendar, Clock, DollarSign, ArrowUpRight, CheckCircle, Video, Loader, Save, Camera, Upload, User as UserIcon } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { useToast } from '../context/ToastContext';
-import { useAuth } from '../App';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import { consultants as consultantsApi } from "../services/api";
+import { Consultant, SessionStatus } from "../types";
+import {
+  TrendingUp,
+  Users,
+  Calendar,
+  Clock,
+  DollarSign,
+  ArrowUpRight,
+  CheckCircle,
+  Video,
+  Loader,
+  Save,
+  Camera,
+  Upload,
+  User as UserIcon,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+} from "recharts";
+import { useToast } from "../context/ToastContext";
+import { useAuth } from "../App";
 
 const DATA = [
-  { name: 'Mon', revenue: 450 },
-  { name: 'Tue', revenue: 300 },
-  { name: 'Wed', revenue: 600 },
-  { name: 'Thu', revenue: 800 },
-  { name: 'Fri', revenue: 550 },
-  { name: 'Sat', revenue: 900 },
-  { name: 'Sun', revenue: 700 },
+  { name: "Mon", revenue: 450 },
+  { name: "Tue", revenue: 300 },
+  { name: "Wed", revenue: 600 },
+  { name: "Thu", revenue: 800 },
+  { name: "Fri", revenue: 550 },
+  { name: "Sat", revenue: 900 },
+  { name: "Sun", revenue: 700 },
 ];
 
 const ConsultantDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Consultant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,10 +49,10 @@ const ConsultantDashboard: React.FC = () => {
 
   // Onboarding State
   const [onboardingData, setOnboardingData] = useState({
-    domain: '',
-    hourly_price: '',
-    bio: '',
-    languages: ''
+    domain: "",
+    hourly_price: "",
+    bio: "",
+    languages: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -47,7 +70,7 @@ const ConsultantDashboard: React.FC = () => {
     } catch (err: any) {
       if (err.response?.status !== 404) {
         console.error("Failed to load profile", err);
-        addToast("Failed to load profile data", 'error');
+        addToast("Failed to load profile data", "error");
       }
     } finally {
       setLoading(false);
@@ -65,34 +88,40 @@ const ConsultantDashboard: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!onboardingData.domain || !onboardingData.hourly_price) {
-      addToast("Domain and Hourly Price are required", 'error');
+      addToast("Domain and Hourly Price are required", "error");
       return;
     }
 
     setSubmitting(true);
     try {
-      console.log('Creating profile with data:', onboardingData);
+      console.log("Creating profile with data:", onboardingData);
       // 1. Create Profile
       await consultantsApi.register(onboardingData);
-      console.log('Profile created successfully');
+      console.log("Profile created successfully");
 
       // 2. Upload Image if selected
       if (selectedFile) {
-        console.log('Uploading selected file:', selectedFile.name);
+        console.log("Uploading selected file:", selectedFile.name);
         try {
           await consultantsApi.uploadProfilePic(selectedFile);
-          console.log('Image uploaded successfully');
+          console.log("Image uploaded successfully");
         } catch (uploadErr) {
-          console.error("Failed to upload image during registration", uploadErr);
-          addToast("Profile created, but image upload failed", 'warning');
+          console.error(
+            "Failed to upload image during registration",
+            uploadErr
+          );
+          addToast("Profile created, but image upload failed", "warning");
         }
       }
 
-      addToast("Profile created successfully!", 'success');
+      addToast("Profile created successfully!", "success");
       fetchProfile();
     } catch (err: any) {
-      console.error('Registration error:', err);
-      addToast(err.response?.data?.error || "Failed to create profile", 'error');
+      console.error("Registration error:", err);
+      addToast(
+        err.response?.data?.error || "Failed to create profile",
+        "error"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -101,17 +130,17 @@ const ConsultantDashboard: React.FC = () => {
   const handleImageUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      console.log('Selected file:', file);
+      console.log("Selected file:", file);
       setUploadingImage(true);
       try {
-        console.log('Starting upload for file:', file.name);
+        console.log("Starting upload for file:", file.name);
         const result = await consultantsApi.uploadProfilePic(file);
-        console.log('Upload result:', result);
-        addToast("Profile picture updated!", 'success');
+        console.log("Upload result:", result);
+        addToast("Profile picture updated!", "success");
         fetchProfile(); // Refresh to get new URL
       } catch (err: any) {
-        console.error('Upload error:', err);
-        addToast("Failed to update profile picture", 'error');
+        console.error("Upload error:", err);
+        addToast("Failed to update profile picture", "error");
       } finally {
         setUploadingImage(false);
       }
@@ -138,17 +167,24 @@ const ConsultantDashboard: React.FC = () => {
               <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600">
                 <Users size={32} />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">Complete Your Expert Profile</h2>
-              <p className="text-gray-500 mt-2">Start earning by sharing your expertise with the world.</p>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Complete Your Expert Profile
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Start earning by sharing your expertise with the world.
+              </p>
             </div>
 
             <form onSubmit={handleRegister} className="space-y-6">
-
               {/* Image Upload for Onboarding */}
               <div className="flex flex-col items-center justify-center mb-6">
                 <div className="relative w-32 h-32 rounded-full bg-gray-100 border-4 border-white shadow-lg overflow-hidden group">
                   {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                       <UserIcon size={48} />
@@ -156,58 +192,95 @@ const ConsultantDashboard: React.FC = () => {
                   )}
                   <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                     <Camera className="text-white" size={24} />
-                    <input type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                    />
                   </label>
                 </div>
-                <p className="text-sm text-gray-400 mt-2">Tap to upload photo</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Tap to upload photo
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Area of Expertise (Domain)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Area of Expertise (Domain)
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. Legal, Medical, Tech, Career Coaching"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   value={onboardingData.domain}
-                  onChange={(e) => setOnboardingData({ ...onboardingData, domain: e.target.value })}
+                  onChange={(e) =>
+                    setOnboardingData({
+                      ...onboardingData,
+                      domain: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Hourly Rate ($)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Hourly Rate ($)
+                </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                    $
+                  </span>
                   <input
                     type="number"
                     placeholder="100"
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     value={onboardingData.hourly_price}
-                    onChange={(e) => setOnboardingData({ ...onboardingData, hourly_price: e.target.value })}
+                    onChange={(e) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        hourly_price: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Bio / Introduction</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Bio / Introduction
+                </label>
                 <textarea
                   rows={4}
                   placeholder="Tell clients about your experience..."
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
                   value={onboardingData.bio}
-                  onChange={(e) => setOnboardingData({ ...onboardingData, bio: e.target.value })}
+                  onChange={(e) =>
+                    setOnboardingData({
+                      ...onboardingData,
+                      bio: e.target.value,
+                    })
+                  }
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Languages Spoken</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Languages Spoken
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. English, Spanish"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   value={onboardingData.languages}
-                  onChange={(e) => setOnboardingData({ ...onboardingData, languages: e.target.value })}
+                  onChange={(e) =>
+                    setOnboardingData({
+                      ...onboardingData,
+                      languages: e.target.value,
+                    })
+                  }
                 />
               </div>
 
@@ -216,7 +289,11 @@ const ConsultantDashboard: React.FC = () => {
                 disabled={submitting}
                 className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center disabled:opacity-50"
               >
-                {submitting ? <Loader className="animate-spin mr-2" /> : <Save className="mr-2" size={20} />}
+                {submitting ? (
+                  <Loader className="animate-spin mr-2" />
+                ) : (
+                  <Save className="mr-2" size={20} />
+                )}
                 Create Profile
               </button>
             </form>
@@ -229,7 +306,6 @@ const ConsultantDashboard: React.FC = () => {
   return (
     <Layout title="Expert Portal">
       <div className="max-w-6xl mx-auto space-y-8">
-
         {/* Status Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between">
@@ -238,7 +314,11 @@ const ConsultantDashboard: React.FC = () => {
               <div className="relative group shrink-0">
                 <div className="w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-white/20 overflow-hidden shadow-xl">
                   {profile.profile_pic ? (
-                    <img src={profile.profile_pic} alt="Profile" className="w-full h-full object-cover" />
+                    <img
+                      src={profile.profile_pic}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/50">
                       <UserIcon size={40} />
@@ -246,25 +326,57 @@ const ConsultantDashboard: React.FC = () => {
                   )}
                 </div>
                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl cursor-pointer">
-                  {uploadingImage ? <Loader className="text-white animate-spin" /> : <Camera className="text-white" />}
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpdate} disabled={uploadingImage} />
+                  {uploadingImage ? (
+                    <Loader className="text-white animate-spin" />
+                  ) : (
+                    <Camera className="text-white" />
+                  )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpdate}
+                    disabled={uploadingImage}
+                  />
                 </label>
               </div>
 
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  {profile.is_verified && <CheckCircle size={20} className="text-blue-200" />}
-                  <span className="text-blue-100 font-bold text-sm tracking-wider uppercase">{profile.is_verified ? 'Verified Profile' : 'Pending Verification'}</span>
+                  {profile.is_verified && (
+                    <CheckCircle size={20} className="text-blue-200" />
+                  )}
+                  <span className="text-blue-100 font-bold text-sm tracking-wider uppercase">
+                    {profile.is_verified
+                      ? "Verified Profile"
+                      : "Pending Verification"}
+                  </span>
                 </div>
-                <h2 className="text-3xl font-bold mb-2">Good morning, {profile.name || user?.email?.split('@')[0] || 'Expert'}!</h2>
+                <h2 className="text-3xl font-bold mb-2">
+                  Good morning,{" "}
+                  {profile.name || user?.email?.split("@")[0] || "Expert"}!
+                </h2>
                 <p className="text-blue-100/80 max-w-md">
-                  Your currently set rate is <b>${profile.hourly_price}/hr</b> in {profile.domain}.
+                  Your currently set rate is <b>${profile.hourly_price}/hr</b>{" "}
+                  in {profile.domain}.
                 </p>
               </div>
             </div>
             <div className="mt-6 md:mt-0 flex space-x-3">
-              <button className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition-all">Go Live</button>
-              <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:bg-gray-50 transition-all">Withdraw Earnings</button>
+              <button
+                onClick={() => navigate("/consultant/messages")}
+                className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:bg-gray-50 transition-all"
+              >
+                Messages
+              </button>
+
+              <button className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition-all">
+                Go Live
+              </button>
+
+              <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:bg-gray-50 transition-all">
+                Withdraw Earnings
+              </button>
             </div>
           </div>
           <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
@@ -273,26 +385,54 @@ const ConsultantDashboard: React.FC = () => {
         {/* Analytics Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Today\'s Earnings', value: '$0', change: '+0%', icon: <DollarSign className="text-emerald-600" />, color: 'bg-emerald-50' },
-            { label: 'Total Sessions', value: '0', change: '100% success', icon: <Video className="text-blue-600" />, color: 'bg-blue-50' },
-            { label: 'Profile Views', value: '0', change: '+0%', icon: <Users className="text-amber-600" />, color: 'bg-amber-50' },
             {
-              label: 'Avg. Rating',
-              value: profile.rating > 0 ? profile.rating.toFixed(1) : 'New',
-              change: profile.total_reviews > 0 ? `${profile.total_reviews} reviews` : 'No reviews',
+              label: "Today's Earnings",
+              value: "$0",
+              change: "+0%",
+              icon: <DollarSign className="text-emerald-600" />,
+              color: "bg-emerald-50",
+            },
+            {
+              label: "Total Sessions",
+              value: "0",
+              change: "100% success",
+              icon: <Video className="text-blue-600" />,
+              color: "bg-blue-50",
+            },
+            {
+              label: "Profile Views",
+              value: "0",
+              change: "+0%",
+              icon: <Users className="text-amber-600" />,
+              color: "bg-amber-50",
+            },
+            {
+              label: "Avg. Rating",
+              value: profile.rating > 0 ? profile.rating.toFixed(1) : "New",
+              change:
+                profile.total_reviews > 0
+                  ? `${profile.total_reviews} reviews`
+                  : "No reviews",
               icon: <Clock className="text-purple-600" />,
-              color: 'bg-purple-50'
+              color: "bg-purple-50",
             },
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div
+              key={i}
+              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className={`${stat.color} p-3 rounded-2xl`}>{stat.icon}</div>
+                <div className={`${stat.color} p-3 rounded-2xl`}>
+                  {stat.icon}
+                </div>
                 <div className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                   <ArrowUpRight size={14} className="mr-0.5" /> {stat.change}
                 </div>
               </div>
               <p className="text-2xl font-black text-gray-900">{stat.value}</p>
-              <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mt-1">{stat.label}</p>
+              <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mt-1">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -302,8 +442,12 @@ const ConsultantDashboard: React.FC = () => {
           <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Revenue Overview</h3>
-                <p className="text-sm text-gray-500">Weekly breakdown of earnings</p>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Revenue Overview
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Weekly breakdown of earnings
+                </p>
               </div>
               <select className="bg-gray-50 border-none rounded-xl text-sm font-bold px-4 py-2 outline-none">
                 <option>Last 7 Days</option>
@@ -313,14 +457,27 @@ const ConsultantDashboard: React.FC = () => {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={DATA}>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} dy={10} />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                    dy={10}
+                  />
                   <Tooltip
-                    cursor={{ fill: '#F3F4F6' }}
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                    cursor={{ fill: "#F3F4F6" }}
+                    contentStyle={{
+                      borderRadius: "16px",
+                      border: "none",
+                      boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                    }}
                   />
                   <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={32}>
                     {DATA.map((entry, index) => (
-                      <Cell key={index} fill={entry.revenue > 600 ? '#2563EB' : '#DBEAFE'} />
+                      <Cell
+                        key={index}
+                        fill={entry.revenue > 600 ? "#2563EB" : "#DBEAFE"}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -332,7 +489,9 @@ const ConsultantDashboard: React.FC = () => {
           <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Slots Today</h3>
-              <button className="p-2 hover:bg-gray-50 rounded-xl transition-all"><TrendingUp size={20} className="text-gray-400" /></button>
+              <button className="p-2 hover:bg-gray-50 rounded-xl transition-all">
+                <TrendingUp size={20} className="text-gray-400" />
+              </button>
             </div>
             <div className="space-y-3">
               <div className="p-8 text-center text-gray-400">
