@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Plus, History, IndianRupee, Loader } from 'lucide-react';
-import Razorpay from 'razorpay';
 import api from '../services/api';
 
 interface CreditPackage {
@@ -80,63 +79,14 @@ const WalletPage: React.FC = () => {
 
       const orderData = orderResponse.data;
       
-      if (!orderResponse.data) {
-        throw new Error(orderData.error || 'Failed to create payment order');
+      if (!orderData?.order_id) {
+        throw new Error(orderData?.error || 'Failed to create payment order');
       }
 
-      // Step 2: Initialize Razorpay payment
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount * 100, // Convert to paise
-        currency: 'INR',
-        name: 'Consultancy Platform',
-        description: `Add ₹${amount} credits${orderData.bonus > 0 ? ` with ₹${orderData.bonus} bonus` : ''}`,
-        order_id: orderData.order_id,
-        handler: async function (response: any) {
-          try {
-            // Step 3: Verify payment and add credits
-            const verifyResponse = await api.post('/payment/verify', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: amount,
-              package_id: packageId
-            });
-
-            const verifyData = verifyResponse.data;
-            
-            if (verifyResponse.data) {
-              alert(`Payment successful! ₹${verifyData.amount_added} credits added to your wallet.`);
-              fetchWalletData();
-              fetchTransactions();
-              setShowAddCredits(false);
-            } else {
-              alert(verifyData.error || 'Payment verification failed');
-            }
-          } catch (error) {
-            console.error('Payment verification error:', error);
-            alert('Payment verification failed. Please contact support.');
-          } finally {
-            setPaymentProcessing(false);
-          }
-        },
-        prefill: {
-          name: 'User',
-          email: 'user@example.com'
-        },
-        theme: {
-          color: '#3399cc'
-        },
-        modal: {
-          ondismiss: function() {
-            setPaymentProcessing(false);
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
+      // Step 2: Redirect to backend payment page
+      // Backend will handle Razorpay checkout and redirect back after payment
+      window.location.href = `http://localhost:5000/payment-page?order_id=${orderData.order_id}&amount=${amount}&credits=${packageId}`;
+      
     } catch (error) {
       console.error('Payment error:', error);
       alert('Failed to initiate payment. Please try again.');
