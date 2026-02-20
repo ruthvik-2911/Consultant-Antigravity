@@ -140,74 +140,21 @@ const EnterpriseSettings: React.FC = () => {
         </div>
 
         {/* ================= BRANDING ================= */}
-        <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
-          <div className="flex items-center gap-2">
-            <Building2 className="text-blue-600" />
-            <h2 className="text-xl font-bold">Branding Controls</h2>
-          </div>
-
-          {/* Existing Logo */}
-          {branding.logoUrl && (
-            <img
-              src={branding.logoUrl}
-              alt="Company Logo"
-              className="h-16 object-contain"
-            />
-          )}
-
+        <div className="flex items-center gap-3">
           <input
-            type="file"
+            type="number"
+            value={branding.defaultPricing}
             onChange={(e) =>
               setBranding({
                 ...branding,
-                logo: e.target.files?.[0] || null,
+                defaultPricing: Number(e.target.value),
               })
             }
+            className="border rounded-xl px-4 py-2 w-40"
           />
-
-          <input
-            type="text"
-            placeholder="Company Tagline"
-            value={branding.tagline}
-            onChange={(e) =>
-              setBranding({
-                ...branding,
-                tagline: e.target.value,
-              })
-            }
-            className="border rounded-xl px-4 py-2 w-full"
-          />
-
-          <textarea
-            placeholder="Company Description"
-            rows={3}
-            value={branding.description}
-            onChange={(e) =>
-              setBranding({
-                ...branding,
-                description: e.target.value,
-              })
-            }
-            className="border rounded-xl px-4 py-2 w-full"
-          />
-
-          <div className="flex items-center gap-3">
-            <DollarSign size={18} />
-            <input
-              type="number"
-              value={branding.defaultPricing}
-              onChange={(e) =>
-                setBranding({
-                  ...branding,
-                  defaultPricing: Number(e.target.value),
-                })
-              }
-              className="border rounded-xl px-4 py-2 w-40"
-            />
-            <span className="text-gray-500 text-sm">
-              Default Session Price (₹)
-            </span>
-          </div>
+          <span className="text-gray-500 text-sm">
+            Default Session Price (₹)
+          </span>
         </div>
 
         {/* ================= PREFERENCES ================= */}
@@ -284,7 +231,7 @@ const EnterpriseSettings: React.FC = () => {
           </div>
 
           <span
-            className={`inline-block px-4 py-2 text-sm font-semibold rounded-full ${
+            className={`inline-block px-4 py-2 text-sm font-semibold rounded-full {
               verificationStatus === "APPROVED"
                 ? "bg-green-100 text-green-700"
                 : verificationStatus === "REJECTED"
