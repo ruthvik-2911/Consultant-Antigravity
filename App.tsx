@@ -50,7 +50,7 @@ import MemberMessages from "./pages/enterprise/member/MemberMessages";
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  login: (email: string, role?: UserRole) => Promise<User>;
+  login: (email: string, role?: UserRole, name?: string) => Promise<User>;
   logout: () => void;
   loading: boolean;
 }
@@ -68,10 +68,14 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   /* ================= LOGIN ================= */
-  const login = async (email: string, role?: UserRole) => {
+  const login = async (
+  email: string,
+  role?: UserRole,
+  name?: string
+) => {
     setLoading(true);
     try {
-      const userData = await auth.login(email, role);
+      const userData = await auth.login(email, role, name);
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       return userData;

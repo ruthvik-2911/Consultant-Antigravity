@@ -20,6 +20,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginRedirect, setShowLoginRedirect] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -46,10 +47,18 @@ const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
 
     try {
       // Send OTP via API
-      await auth.sendOtp(email);
+      await auth.sendOtp(email, type);
       setStep('OTP');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to send OTP. Please try again.');
+      const message =
+        err.response?.data?.error || "Failed to send OTP. Please try again.";
+
+      setError(message);
+
+      if (message.includes("already exists")) {
+        setShowLoginRedirect(true);
+      }
+
     } finally {
       setIsLoading(false);
     }
@@ -137,8 +146,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ type }) => {
 
         <div className="p-8">
           {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl animate-bounce">
-              {error}
+            <div className="mb-6 space-y-3">
+              <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl">
+                {error}
+              </div>
+
+              {showLoginRedirect && (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+                >
+                  Go to Login
+                </button>
+              )}
             </div>
           )}
 

@@ -60,19 +60,20 @@ api.interceptors.request.use(
 /* ========================================================= */
 
 export const auth = {
-  login: async (email: string, role?: string, phone?: string) => {
-    const response = await api.post("/auth/me", {
-      email,
-      role,
-      phone,
-    });
-    return response.data;
-  },
 
-  sendOtp: async (email: string) => {
-    const response = await api.post("/auth/send-otp", { email });
-    return response.data;
-  },
+ login: async (email: string, role?: UserRole, name?: string) => {
+  const res = await api.post("/auth/me", {
+    email,
+    role,
+    name
+  });
+  return res.data;
+},
+
+ sendOtp: async (email: string, type: "LOGIN" | "SIGNUP") => {
+  const response = await api.post("/auth/send-otp", { email, type });
+  return response.data;
+},
 
   verifyOtp: async (email: string, otp: string) => {
     const response = await api.post("/auth/verify-otp", { email, otp });

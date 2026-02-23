@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
         '/credit-packages': 'http://127.0.0.1:5000',
         '/transactions': 'http://127.0.0.1:5000',
         '/ConsultantSupportPage': 'http://127.0.0.1:5000',
-        '/support': 'http://127.0.0.1:5000'
+        '/support': 'http://127.0.0.1:5000',
+        '/enterprise': 'http://127.0.0.1:5000',
 
       },
     },

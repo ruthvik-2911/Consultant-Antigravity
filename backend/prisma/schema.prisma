@@ -8,36 +8,52 @@ datasource db {
 }
 
 model User {
-  id             Int             @id @default(autoincrement())
-  firebase_uid   String          @unique
-  email          String          @unique
-  phone          String?
-  role           String          @default("USER")
-  is_verified    Boolean         @default(false)
-  otp_code       String?
-  otp_expiry     DateTime?
-  avatar         String?
-  created_at     DateTime        @default(now())
-  consultant     Consultant?
-  bookings       Booking[]
-  messages       Message[]
-  wallet         Wallet?
-  transactions   Transaction[]
-  paymentOrders  PaymentOrder[]
-  reviews        Review[]
-  supportTickets SupportTicket[]
-  enterprise Enterprise?
+  id                    Int             @id @default(autoincrement())
+  firebase_uid          String          @unique
+  email                 String          @unique
+  phone                 String?
+  name                  String?  
+  role                  String          @default("USER")
+  is_verified           Boolean         @default(false)
+  otp_code              String?
+  otp_expiry            DateTime?
+  invite_token          String?         @unique
+  invite_token_expiry   DateTime?
+  temp_username         String?
+  temp_password         String?
+  created_at            DateTime        @default(now())
+  updated_at            DateTime        @updatedAt
+  bookings              Booking[]
+  consultant            Consultant?
+  enterpriseId          Int?
+  enterprise            Enterprise?     @relation("EnterpriseMembers", fields: [enterpriseId], references: [id])
+  ownedEnterprise       Enterprise?     @relation("EnterpriseOwner")
+  messages              Message[]
+  paymentOrders         PaymentOrder[]
+  reviews               Review[]
+  supportTickets        SupportTicket[]
+  transactions          Transaction[]
+  profile               UserProfile?
+  wallet                Wallet?
+}
 
+model UserProfile {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  avatar     String?
+  bio        String?
+  headline   String?
+  languages  String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Consultant {
   id             Int             @id @default(autoincrement())
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int             @unique
   type           String?
   domain         String?
-  bio            String?
-  languages      String?
   profile_pic    String?
   hourly_price   Float?
   rating         Float           @default(0)
@@ -45,27 +61,26 @@ model Consultant {
   is_verified    Boolean         @default(false)
   availability   Availability[]
   bookings       Booking[]
-  slots          Slot[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviews        Review[]
+  slots          Slot[]
   supportTickets SupportTicket[]
 }
 
 model Availability {
   id             Int        @id @default(autoincrement())
-  consultant     Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
   consultantId   Int
   available_date DateTime
   available_time String
   is_booked      Boolean    @default(false)
+  consultant     Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
 
   @@unique([consultantId, available_date, available_time])
 }
 
 model Booking {
   id             Int        @id @default(autoincrement())
-  user           User       @relation(fields: [userId], references: [id])
   userId         Int
-  consultant     Consultant @relation(fields: [consultantId], references: [id])
   consultantId   Int
   date           DateTime
   time_slot      String
@@ -78,6 +93,8 @@ model Booking {
   net_earning    Float?
   created_at     DateTime   @default(now())
   completed_at   DateTime?
+  consultant     Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages       Message[]
   payment        Payment?
   review         Review?
@@ -85,36 +102,35 @@ model Booking {
 
 model Message {
   id         Int      @id @default(autoincrement())
-  booking    Booking  @relation(fields: [bookingId], references: [id])
   bookingId  Int
-  sender     User     @relation(fields: [senderId], references: [id])
   senderId   Int
   content    String
   created_at DateTime @default(now())
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
   id          Int      @id @default(autoincrement())
-  booking     Booking  @relation(fields: [bookingId], references: [id])
   bookingId   Int      @unique
   amount      Float
   status      String
   razorpay_id String?
   created_at  DateTime @default(now())
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
 
 model Wallet {
   id         Int      @id @default(autoincrement())
   userId     Int      @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   balance    Float    @default(0)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {
   id             Int      @id @default(autoincrement())
-  user           User     @relation(fields: [userId], references: [id])
   userId         Int
   type           String
   amount         Float
@@ -124,6 +140,7 @@ model Transaction {
   payment_method String?
   status         String   @default("SUCCESS")
   created_at     DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CreditPackage {
@@ -141,32 +158,21 @@ model Slot {
   startTime    String
   endTime      String
   createdAt    DateTime   @default(now())
-  consultant   Consultant @relation(fields: [consultantId], references: [id])
+  consultant   Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
 }
 
 model Review {
   id           Int        @id @default(autoincrement())
-  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   bookingId    Int        @unique
-  consultant   Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
   consultantId Int
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   rating       Int
   comment      String?
   created_at   DateTime   @default(now())
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  consultant   Consultant @relation(fields: [consultantId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-
-model SupportTicket {
-  id Int @id @default(autoincrement())
-
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  consultantId Int?
-  consultant   Consultant? @relation(fields: [consultantId], references: [id], onDelete: Cascade)
-
 
 model Enterprise {
   id              Int      @id @default(autoincrement())
@@ -176,24 +182,21 @@ model Enterprise {
   logo            String?
   website         String?
   description     String?
-
-
   ownerId         Int      @unique
-  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
   created_at      DateTime @default(now())
-  supportTickets SupportTicket[]
+  priority        String   @default("MEDIUM")
+  status          String   @default("OPEN")
+  updated_at      DateTime @updatedAt
 
-  status   String @default("OPEN")
-  priority String @default("MEDIUM")
+  owner    User   @relation("EnterpriseOwner", fields: [ownerId], references: [id])
+  members  User[] @relation("EnterpriseMembers")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  invites         EnterpriseInvite[]
+  supportTickets  SupportTicket[]
 }
 
 model PaymentOrder {
   id                  Int      @id @default(autoincrement())
-  user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id             Int
   razorpay_order_id   String   @unique
   razorpay_payment_id String?
@@ -204,25 +207,34 @@ model PaymentOrder {
   status              String   @default("PENDING")
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
+  user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model SupportTicket {
-  id            Int      @id @default(autoincrement())
-
-  userId        Int?
-  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  enterpriseId  Int?
-  enterprise    Enterprise? @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-
-  subject       String
-  category      String
-  description   String
-
-  status        String   @default("OPEN")
-  priority      String   @default("MEDIUM")
-
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id           Int         @id @default(autoincrement())
+  userId       Int?
+  subject      String
+  category     String
+  description  String
+  status       String      @default("OPEN")
+  priority     String      @default("MEDIUM")
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  enterpriseId Int?
+  consultantId Int?
+  consultant   Consultant? @relation(fields: [consultantId], references: [id], onDelete: Cascade)
+  enterprise   Enterprise? @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model EnterpriseInvite {
+  id           Int      @id @default(autoincrement())
+  email        String
+  token        String   @unique
+  enterpriseId Int
+  status       String   @default("PENDING")
+  expiresAt    DateTime
+  created_at   DateTime @default(now())
+
+  enterprise Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+}

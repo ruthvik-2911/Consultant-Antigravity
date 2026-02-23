@@ -40,6 +40,15 @@ const UserDashboard: React.FC = () => {
 
   }, []);
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  }, []);
+
+
   const fetchNotifications = async () => {
     try {
       const res = await api.get("/notifications");
@@ -151,7 +160,7 @@ const UserDashboard: React.FC = () => {
 
           <div>
             <h1 className="text-4xl font-bold mb-4">
-              Welcome back, {user?.email?.split("@")[0]} 👋
+              {greeting}, {user?.name || user?.email?.split("@")[0]} 👋
             </h1>
 
             <p className="text-gray-500">
@@ -235,84 +244,84 @@ const UserDashboard: React.FC = () => {
         </div>
 
         {/* ================= RECOMMENDED CONSULTANTS ================= */}
-<div>
-  <h2 className="text-2xl font-bold mb-6">
-    Recommended Consultants
-  </h2>
+        <div>
+          <h2 className="text-2xl font-bold mb-6">
+            Recommended Consultants
+          </h2>
 
-  {consultants?.length === 0 ? (
-    <div className="bg-white p-8 rounded-3xl shadow-sm border text-gray-500">
-      No recommendations available.
-    </div>
-  ) : (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {consultants?.length === 0 ? (
+            <div className="bg-white p-8 rounded-3xl shadow-sm border text-gray-500">
+              No recommendations available.
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      {consultants.map((c) => (
-        <div
-          key={c.id}
-          className="bg-white p-6 rounded-3xl shadow-sm border hover:shadow-md transition"
-        >
-          {/* Profile Image */}
-          <div className="flex justify-center mb-4">
-            <img
-              src={c.profile_pic || "https://via.placeholder.com/100"}
-              alt={c.name}
-              className="h-20 w-20 rounded-full object-cover"
-            />
-          </div>
+              {consultants.map((c) => (
+                <div
+                  key={c.id}
+                  className="bg-white p-6 rounded-3xl shadow-sm border hover:shadow-md transition"
+                >
+                  {/* Profile Image */}
+                  <div className="flex justify-center mb-4">
+                    <img
+                      src={c.profile_pic || "https://via.placeholder.com/100"}
+                      alt={c.name}
+                      className="h-20 w-20 rounded-full object-cover"
+                    />
+                  </div>
 
-          {/* Name */}
-          <h3 className="text-lg font-bold text-center">
-            {c.name}
-          </h3>
+                  {/* Name */}
+                  <h3 className="text-lg font-bold text-center">
+                    {c.name}
+                  </h3>
 
-          {/* Domain */}
-          <p className="text-blue-600 text-sm text-center mt-1">
-            {c.domain}
-          </p>
+                  {/* Domain */}
+                  <p className="text-blue-600 text-sm text-center mt-1">
+                    {c.domain}
+                  </p>
 
-          {/* Rating */}
-          <div className="flex justify-center items-center mt-3 text-yellow-500 text-sm">
-            ⭐ {c.rating || 5}
-          </div>
-
-
-          {/* Price */}
-          <p className="text-center font-semibold mt-3">
-            ₹{c.hourly_price} / session
-          </p>
-
-          {/* View Profile Button */}
-          <div className="flex justify-center mt-5">
-            <button
-              onClick={() => navigate(`/user/consultant/${c.id}`)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
-            >
-              View Profile
-            </button>
-          </div>
-
-    <button
-      onClick={() => navigate("/user/credits")}
-      className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
-    >
-      Upgrade Plan
-    </button>
-
-    <button
-      onClick={() => navigate("/user/credits")}
-      className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
-    >
-      View Transactions
-    </button>
+                  {/* Rating */}
+                  <div className="flex justify-center items-center mt-3 text-yellow-500 text-sm">
+                    ⭐ {c.rating || 5}
+                  </div>
 
 
+                  {/* Price */}
+                  <p className="text-center font-semibold mt-3">
+                    ₹{c.hourly_price} / session
+                  </p>
+
+                  {/* View Profile Button */}
+                  <div className="flex justify-center mt-5">
+                    <button
+                      onClick={() => navigate(`/user/consultant/${c.id}`)}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
+                    >
+                      View Profile
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/user/credits")}
+                    className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
+                  >
+                    Upgrade Plan
+                  </button>
+
+                  <button
+                    onClick={() => navigate("/user/credits")}
+                    className="border border-white px-6 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition"
+                  >
+                    View Transactions
+                  </button>
+
+
+                </div>
+              ))}
+
+            </div>
+          )}
         </div>
-      ))}
-
-    </div>
-  )}
-</div>
 
 
         {/* ================= CREDITS & SUBSCRIPTION ================= */}
@@ -369,105 +378,105 @@ const UserDashboard: React.FC = () => {
 
         </div>
 
-      {/* ================= RECENT ACTIVITY ================= */}
-<div className="bg-white p-8 rounded-3xl shadow-sm border">
+        {/* ================= RECENT ACTIVITY ================= */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border">
 
-  <h2 className="text-2xl font-bold mb-6">
-    Recent Activity
-  </h2>
+          <h2 className="text-2xl font-bold mb-6">
+            Recent Activity
+          </h2>
 
-  <div className="space-y-4">
+          <div className="space-y-4">
 
-    {/* Last Booking */}
-    <div className="flex justify-between items-center border-b pb-3">
-      <span className="text-gray-500">Last Booking</span>
-      <span className="font-semibold text-gray-900">
-        {sessions?.length > 0
-          ? sessions[0]?.consultant?.domain || "Session"
-          : "No bookings"}
-      </span>
-    </div>
-
-    {/* Last Payment */}
-    <div className="flex justify-between items-center border-b pb-3">
-      <span className="text-gray-500">Last Payment</span>
-      <span className="font-semibold text-gray-900">
-        {transactions?.length > 0
-          ? `₹${transactions[0]?.amount}`
-          : "No payments"}
-      </span>
-    </div>
-
-    {/* Last Review */}
-    <div className="flex justify-between items-center border-b pb-3">
-      <span className="text-gray-500">Last Review</span>
-      <span className="font-semibold text-gray-900">
-        {sessions?.some(s => s.review)
-          ? `${sessions.find(s => s.review)?.review?.rating}★`
-          : "No reviews"}
-      </span>
-    </div>
-
-    {/* Recent Chat */}
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500">Recent Chat</span>
-      <span className="font-semibold text-gray-900">
-        {sessions?.some(s => s.chat_started)
-          ? sessions.find(s => s.chat_started)?.consultant?.domain
-          : "No chats"}
-      </span>
-    </div>
-
-  </div>
-
-</div>
-
-
-
-{/* ================= NOTIFICATIONS PREVIEW ================= */}
-<div className="bg-white p-8 rounded-3xl shadow-sm border">
-
-  <div className="flex justify-between items-center mb-6">
-    <h2 className="text-2xl font-bold">Notifications</h2>
-
-    <button
-      onClick={() => navigate("/user/message")}
-      className="text-blue-600 font-semibold hover:underline"
-    >
-      View All
-    </button>
-  </div>
-
-  <div className="space-y-4">
-
-    {Array.isArray(notifications) && notifications.length > 0 ? (
-      notifications.slice(0, 3).map((n, index) => (
-        <div
-          key={index}
-          className="p-4 border rounded-xl hover:bg-gray-50 transition"
-        >
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="font-semibold">{n.title}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {n.message}
-              </p>
+            {/* Last Booking */}
+            <div className="flex justify-between items-center border-b pb-3">
+              <span className="text-gray-500">Last Booking</span>
+              <span className="font-semibold text-gray-900">
+                {sessions?.length > 0
+                  ? sessions[0]?.consultant?.domain || "Session"
+                  : "No bookings"}
+              </span>
             </div>
 
-            <span className="text-xs text-gray-400">
-              {n.created_at
-                ? new Date(n.created_at).toLocaleDateString()
-                : ""}
-            </span>
+            {/* Last Payment */}
+            <div className="flex justify-between items-center border-b pb-3">
+              <span className="text-gray-500">Last Payment</span>
+              <span className="font-semibold text-gray-900">
+                {transactions?.length > 0
+                  ? `₹${transactions[0]?.amount}`
+                  : "No payments"}
+              </span>
+            </div>
+
+            {/* Last Review */}
+            <div className="flex justify-between items-center border-b pb-3">
+              <span className="text-gray-500">Last Review</span>
+              <span className="font-semibold text-gray-900">
+                {sessions?.some(s => s.review)
+                  ? `${sessions.find(s => s.review)?.review?.rating}★`
+                  : "No reviews"}
+              </span>
+            </div>
+
+            {/* Recent Chat */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Recent Chat</span>
+              <span className="font-semibold text-gray-900">
+                {sessions?.some(s => s.chat_started)
+                  ? sessions.find(s => s.chat_started)?.consultant?.domain
+                  : "No chats"}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        {/* ================= NOTIFICATIONS PREVIEW ================= */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border">
+
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Notifications</h2>
+
+            <button
+              onClick={() => navigate("/user/message")}
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              View All
+            </button>
+          </div>
+
+          <div className="space-y-4">
+
+            {Array.isArray(notifications) && notifications.length > 0 ? (
+              notifications.slice(0, 3).map((n, index) => (
+                <div
+                  key={index}
+                  className="p-4 border rounded-xl hover:bg-gray-50 transition"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold">{n.title}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {n.message}
+                      </p>
+                    </div>
+
+                    <span className="text-xs text-gray-400">
+                      {n.created_at
+                        ? new Date(n.created_at).toLocaleDateString()
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No notifications available</p>
+            )}
+
           </div>
         </div>
-      ))
-    ) : (
-      <p className="text-gray-500">No notifications available</p>
-    )}
-
-  </div>
-</div>
 
 
 
