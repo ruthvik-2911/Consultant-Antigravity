@@ -124,6 +124,27 @@ export const consultants = {
 
     return response.data;
   },
+  getDashboardStats: async () => {
+    const response = await api.get("/consultant/dashboard-stats");
+    return response.data;
+  },
+
+  getConsultantBookings: async () => {
+    const response = await api.get("/consultant/bookings");
+    return response.data;
+  },
+
+  getConsultantAvailability: async () => {
+    const response = await api.get("/consultant/availability");
+    return response.data;
+  },
+
+  getConsultantEarnings: async (period: string) => {
+    const response = await api.get("/consultant/earnings", {
+      params: { period },
+    });
+    return response.data;
+  },
 };
 
 /* ========================================================= */

@@ -183,7 +183,7 @@ const ConsultantDashboard: React.FC = () => {
         return;
       }
 
-      const response = await bookings.getConsultantBookings();
+      const response = await consultantsApi.getConsultantBookings();
       const upcomingBookings = response.filter(
         (booking: Booking) =>
           booking.status === "UPCOMING" && new Date(booking.date) >= new Date()
